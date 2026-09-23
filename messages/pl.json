@@ -54,5 +54,75 @@
     "notAvailable": "Niedostępne",
     "plcNotice": "Tylko wartość planowana. Aplikacja nie wysyła polecenia do maszyny."
   },
-  "errors": { "generic": "Nie udało się wykonać żądania.", "errorId": "ID błędu" }
+  "errors": {
+    "generic": "Nie udało się wykonać żądania.",
+    "errorId": "ID błędu",
+    "invalid": "Sprawdź wprowadzone wartości.",
+    "forbidden": "Twoja rola nie pozwala na tę zmianę.",
+    "failed": "Nie udało się zapisać. Spróbuj ponownie."
+  },
+  "form": { "add": "Dodaj", "save": "Zapisz", "readOnly": "Twoja rola pozwala przeglądać te dane, ale nie zmieniać." },
+  "machines": {
+    "title": "Maszyny",
+    "list": "Maszyny w organizacji",
+    "add": "Dodaj maszynę",
+    "empty": "Brak maszyn.",
+    "noSites": "Dodaj lokalizację w Ustawieniach, zanim dodasz maszynę.",
+    "site": "Lokalizacja",
+    "manufacturer": "Producent",
+    "model": "Model",
+    "variant": "Wariant",
+    "serial": "Numer seryjny",
+    "screwDiameter": "Średnica ślimaka [mm]",
+    "ld": "L/D",
+    "power": "Moc napędu [kW]",
+    "maxRpm": "Maks. obroty ślimaka [rpm]",
+    "maxPressure": "Maks. ciśnienie [bar]",
+    "zones": "Strefy cylindra"
+  },
+  "materials": {
+    "title": "Surowce",
+    "list": "Surowce",
+    "add": "Dodaj surowiec",
+    "empty": "Brak surowców.",
+    "name": "Nazwa",
+    "supplier": "Dostawca",
+    "lots": "Partie"
+  },
+  "recipes": {
+    "title": "Receptury",
+    "list": "Receptury",
+    "add": "Dodaj recepturę",
+    "empty": "Brak receptur.",
+    "name": "Nazwa",
+    "productType": "Typ produktu",
+    "versions": "Wersje",
+    "created": "Utworzono"
+  },
+  "runs": {
+    "title": "Przebiegi",
+    "list": "Przebiegi",
+    "add": "Zaplanuj przebieg",
+    "empty": "Brak przebiegów.",
+    "noMachines": "Dodaj maszynę, zanim zaplanujesz przebieg.",
+    "code": "Kod przebiegu",
+    "machine": "Maszyna",
+    "status": "Status",
+    "start": "Start",
+    "end": "Koniec"
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "organization": "Organizacja",
+    "orgName": "Nazwa organizacji",
+    "sites": "Lokalizacje",
+    "addSite": "Dodaj lokalizację",
+    "siteName": "Nazwa lokalizacji",
+    "timezone": "Strefa czasowa (np. Europe/Warsaw)",
+    "noSites": "Brak lokalizacji.",
+    "members": "Członkowie",
+    "user": "Użytkownik",
+    "role": "Rola",
+    "you": "ty"
+  }
 }

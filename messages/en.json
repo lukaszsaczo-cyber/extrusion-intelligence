@@ -54,5 +54,75 @@
     "notAvailable": "Not available",
     "plcNotice": "Planned value only. No machine command will be sent."
   },
-  "errors": { "generic": "Request could not be completed.", "errorId": "Error ID" }
+  "errors": {
+    "generic": "Request could not be completed.",
+    "errorId": "Error ID",
+    "invalid": "Check the entered values.",
+    "forbidden": "Your role does not allow this change.",
+    "failed": "Could not save. Try again."
+  },
+  "form": { "add": "Add", "save": "Save", "readOnly": "Your role can view this data but not change it." },
+  "machines": {
+    "title": "Machines",
+    "list": "Machines in the organization",
+    "add": "Add machine",
+    "empty": "No machines yet.",
+    "noSites": "Add a site in Settings before adding a machine.",
+    "site": "Site",
+    "manufacturer": "Manufacturer",
+    "model": "Model",
+    "variant": "Variant",
+    "serial": "Serial number",
+    "screwDiameter": "Screw diameter [mm]",
+    "ld": "L/D",
+    "power": "Drive power [kW]",
+    "maxRpm": "Max screw speed [rpm]",
+    "maxPressure": "Max pressure [bar]",
+    "zones": "Barrel zones"
+  },
+  "materials": {
+    "title": "Materials",
+    "list": "Raw materials",
+    "add": "Add material",
+    "empty": "No materials yet.",
+    "name": "Name",
+    "supplier": "Supplier",
+    "lots": "Lots"
+  },
+  "recipes": {
+    "title": "Recipes",
+    "list": "Recipes",
+    "add": "Add recipe",
+    "empty": "No recipes yet.",
+    "name": "Name",
+    "productType": "Product type",
+    "versions": "Versions",
+    "created": "Created"
+  },
+  "runs": {
+    "title": "Runs",
+    "list": "Runs",
+    "add": "Plan a run",
+    "empty": "No runs yet.",
+    "noMachines": "Add a machine before planning a run.",
+    "code": "Run code",
+    "machine": "Machine",
+    "status": "Status",
+    "start": "Start",
+    "end": "End"
+  },
+  "settings": {
+    "title": "Settings",
+    "organization": "Organization",
+    "orgName": "Organization name",
+    "sites": "Sites",
+    "addSite": "Add site",
+    "siteName": "Site name",
+    "timezone": "Time zone (e.g. Europe/Warsaw)",
+    "noSites": "No sites yet.",
+    "members": "Members",
+    "user": "User",
+    "role": "Role",
+    "you": "you"
+  }
 }
