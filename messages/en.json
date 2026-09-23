@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Extrusion Intelligence",
+    "subtitle": "Decision support for twin-screw extrusion.",
+    "points": { "preflight": "Pre-run feasibility", "verify": "Process verification", "evidence": "Traceable evidence" },
+    "footer": "Private process engine. Read-only advisory mode."
+  },
+  "login": {
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "toSignUp": "No account yet? Create one",
+    "toSignIn": "Already have an account? Sign in",
+    "checkEmail": "Check your inbox and confirm the account, then sign in.",
+    "failed": "Sign-in failed. Check your email and password."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "new-product": "New Product",
+    "preflight": "Preflight",
+    "machine-console": "Machine Console",
+    "runs": "Runs",
+    "machines": "Machines",
+    "recipes": "Recipes",
+    "materials": "Materials",
+    "history": "History",
+    "audit": "Audit",
+    "settings": "Settings"
+  },
+  "top": { "organization": "Organization", "role": "Role", "engine": "Engine", "signOut": "Sign out", "language": "Language" },
+  "role": { "ADMIN": "Admin", "ENGINEER": "Engineer", "OPERATOR": "Operator", "VIEWER": "Viewer" },
+  "engine": { "connected": "Private process engine connected.", "notConnected": "Private process engine not connected." },
+  "dashboard": {
+    "title": "Dashboard",
+    "machines": "Machines",
+    "runs": "Runs",
+    "engine": "Engine",
+    "recentRuns": "Recent runs",
+    "noRuns": "No runs yet. Import run data to see it here.",
+    "col": { "run": "Run", "machine": "Machine", "status": "Status", "start": "Start" },
+    "actions": { "newProduct": "New Product", "analyze": "Analyze Recipe", "import": "Import Run" }
+  },
+  "onboarding": {
+    "title": "Create an organization",
+    "body": "Your account does not belong to an organization yet. Create one and you become its admin.",
+    "name": "Organization name",
+    "create": "Create organization",
+    "invalid": "Enter a name between 1 and 200 characters."
+  },
+  "placeholder": { "body": "This module is in preparation. It shows no sample data." },
+  "runStatus": { "PLANNED": "Planned", "RUNNING": "Running", "COMPLETED": "Completed", "ABORTED": "Aborted" },
+  "common": {
+    "notAvailable": "Not available",
+    "plcNotice": "Planned value only. No machine command will be sent."
+  },
+  "errors": { "generic": "Request could not be completed.", "errorId": "Error ID" }
+}

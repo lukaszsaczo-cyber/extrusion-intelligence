@@ -1,0 +1,58 @@
+{
+  "app": {
+    "title": "Extrusion Intelligence",
+    "subtitle": "Wsparcie decyzji w procesie ekstruzji dwuślimakowej.",
+    "points": { "preflight": "Ocena wykonalności przed uruchomieniem", "verify": "Weryfikacja procesu", "evidence": "Identyfikowalne dowody" },
+    "footer": "Prywatny silnik procesu. Tryb doradczy tylko do odczytu."
+  },
+  "login": {
+    "email": "E-mail",
+    "password": "Hasło",
+    "signIn": "Zaloguj się",
+    "signUp": "Utwórz konto",
+    "toSignUp": "Nie masz konta? Utwórz je",
+    "toSignIn": "Masz konto? Zaloguj się",
+    "checkEmail": "Sprawdź skrzynkę e-mail i potwierdź konto, a potem zaloguj się.",
+    "failed": "Logowanie nie powiodło się. Sprawdź e-mail i hasło."
+  },
+  "nav": {
+    "dashboard": "Pulpit",
+    "new-product": "Nowy produkt",
+    "preflight": "Preflight",
+    "machine-console": "Konsola maszyny",
+    "runs": "Przebiegi",
+    "machines": "Maszyny",
+    "recipes": "Receptury",
+    "materials": "Surowce",
+    "history": "Historia",
+    "audit": "Audyt",
+    "settings": "Ustawienia"
+  },
+  "top": { "organization": "Organizacja", "role": "Rola", "engine": "Silnik", "signOut": "Wyloguj", "language": "Język" },
+  "role": { "ADMIN": "Administrator", "ENGINEER": "Inżynier", "OPERATOR": "Operator", "VIEWER": "Podgląd" },
+  "engine": { "connected": "Prywatny silnik procesu połączony.", "notConnected": "Prywatny silnik procesu nie jest połączony." },
+  "dashboard": {
+    "title": "Pulpit",
+    "machines": "Maszyny",
+    "runs": "Przebiegi",
+    "engine": "Silnik",
+    "recentRuns": "Ostatnie przebiegi",
+    "noRuns": "Brak przebiegów. Zaimportuj dane przebiegu, aby je tu zobaczyć.",
+    "col": { "run": "Przebieg", "machine": "Maszyna", "status": "Status", "start": "Start" },
+    "actions": { "newProduct": "Nowy produkt", "analyze": "Analizuj recepturę", "import": "Importuj przebieg" }
+  },
+  "onboarding": {
+    "title": "Utwórz organizację",
+    "body": "Twoje konto nie należy jeszcze do żadnej organizacji. Utwórz ją, a zostaniesz jej administratorem.",
+    "name": "Nazwa organizacji",
+    "create": "Utwórz organizację",
+    "invalid": "Podaj nazwę od 1 do 200 znaków."
+  },
+  "placeholder": { "body": "Ten moduł jest w przygotowaniu. Nie wyświetla żadnych danych przykładowych." },
+  "runStatus": { "PLANNED": "Zaplanowany", "RUNNING": "W toku", "COMPLETED": "Zakończony", "ABORTED": "Przerwany" },
+  "common": {
+    "notAvailable": "Niedostępne",
+    "plcNotice": "Tylko wartość planowana. Aplikacja nie wysyła polecenia do maszyny."
+  },
+  "errors": { "generic": "Nie udało się wykonać żądania.", "errorId": "ID błędu" }
+}

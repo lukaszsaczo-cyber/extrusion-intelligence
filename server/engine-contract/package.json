@@ -1,0 +1,8 @@
+{
+  "name": "ei-engine-contract",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Public engine contract + sanitizer for Extrusion Intelligence (server-only).",
+  "scripts": { "test": "node --test" },
+  "engines": { "node": ">=20" }
+}

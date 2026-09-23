@@ -1,0 +1,3 @@
+node_modules/
+# digests are regenerated per environment with your own TERM_GUARD_KEY
+forbidden-term-digests.json
