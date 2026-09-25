@@ -23,8 +23,8 @@ stage gate was run with PASS evidence. Stage gates are still open.
 
 | # | Scope | State in repo | Missing |
 |---|---|---|---|
-| 1 | Next.js, TS strict, ESLint, PL/EN, layout, Auth | Done: app, i18n parity check (`scripts/check-i18n.mjs`), Auth | **No ESLint config**, so no `no-restricted-imports` for `@/server/**` in client components |
-| 2 | Migrations, tables, indexes, RLS | Schema live. Migrations 0006–0012 are in the repo | 0001–0005 are not in the repo (applied earlier); **no cross-org RLS tests** |
+| 1 | Next.js, TS strict, ESLint, PL/EN, layout, Auth | **Gate PASS** (0b2225b): ESLint with a client/server boundary rule proven by 7 tests; tsc, lint, tests, i18n 312/312, build, Vercel deploy | — |
+| 2 | Migrations, tables, indexes, RLS | Schema live. Migrations 0006–0012 are in the repo. **Cross-org RLS test PASS** on production 2026-09-25: 28 tables, 146 checks, 0 failures; negative control DETECTS_LEAK; nothing left behind (`supabase/tests/`, `npm run test:rls`) | 0001–0005 are not in the repo (applied earlier) |
 | 3 | engine-contract, TS wrapper, API routes | `server/engine-contract`, `server/engine.ts` (server-only), `api/health` | Term guard runs with `digests: []`, so it is **not active**; no decision API route |
 | 4 | Dashboard, Machines, Machine Console | Dashboard, Machines (with signal dictionary and tag mapping) | Machine Console is a placeholder |
 | 5 | Wizard, Preflight, Approval | DB RPC `approve_process_plan` exists | Wizard, Preflight and Approval UI are placeholders |
