@@ -25,16 +25,19 @@ stage gate was run with PASS evidence. Stage gates are still open.
 |---|---|---|---|
 | 1 | Next.js, TS strict, ESLint, PL/EN, layout, Auth | **Gate PASS** (0b2225b): ESLint with a client/server boundary rule proven by 7 tests; tsc, lint, tests, i18n 312/312, build, Vercel deploy | — |
 | 2 | Migrations, tables, indexes, RLS | Schema live. Migrations 0006–0012 are in the repo. **Cross-org RLS test PASS** on production 2026-09-25: 28 tables, 146 checks, 0 failures; negative control DETECTS_LEAK; nothing left behind (`supabase/tests/`, `npm run test:rls`) | 0001–0005 are not in the repo (applied earlier) |
-| 3 | engine-contract, TS wrapper, API routes | `server/engine-contract`, `server/engine.ts` (server-only), `api/health` | Term guard runs with `digests: []`, so it is **not active**; no decision API route |
+| 3 | engine-contract, TS wrapper, API routes | `server/engine-contract`, `server/engine.ts` (server-only), `api/health`. **Secret canary test PASS** 2026-09-25: 5 canaries, 0 of 48 files in `.next/static` (`npm run test:canary`) | Term guard runs with `digests: []`, so it is **not active** (needs `TERM_GUARD_KEY` + terms: NOT RUN); no decision API route |
 | 4 | Dashboard, Machines, Machine Console | Dashboard, Machines (with signal dictionary and tag mapping) | Machine Console is a placeholder |
 | 5 | Wizard, Preflight, Approval | DB RPC `approve_process_plan` exists | Wizard, Preflight and Approval UI are placeholders |
 | 6 | CSV Import, Run Detail, Predicted vs Actual, Verification | CSV import (VALID/SUSPECT/MISSING/UNMAPPED, raw text kept), quality and diagnosis pages per run | **Predicted vs Actual** and **Verification** flow; no dedicated test for formulas stored as text (they become SUSPECT with the raw text kept) |
 | 7 | History, Audit, JSON export, Settings | Settings (organization, signal dictionary) | History, Audit, JSON export with allowlist |
 | 8 | Full audit AR 1–20, AT report | — | not started |
 
-Secret exposure: `scripts/check-bundle.mjs` scans `.next/static` for secret
-**values** after build and reports NOT RUN for variables not set. It uses real
-values, not dedicated canary values as the spec amendment requires.
+Secret exposure: `npm run test:canary` builds with a unique random canary for
+each server-only secret and requires 0 occurrences in `.next/static`. The
+scanner's own negative controls (a planted canary is found; nothing scanned is
+NOT RUN, never PASS) are in `scripts/secret-scan.test.mjs`. `check-bundle.mjs`
+still scans real build-env values after every build and now reports NOT RUN,
+not PASS, when no secret is set.
 
 Deviation to be aware of: parts of the diagnostic loop (quality filter,
 snapshots, diagnosis gates) were built before stages 5–7 were closed. They do

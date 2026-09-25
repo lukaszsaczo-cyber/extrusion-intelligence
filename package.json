@@ -10,7 +10,8 @@
     "test": "node --test --experimental-strip-types lib/*/*.test.ts && node --test scripts/*.test.mjs && cd server/engine-contract && node --test",
     "check:i18n": "node scripts/check-i18n.mjs",
     "lint": "eslint .",
-    "test:rls": "node scripts/rls-cross-org.mjs"
+    "test:rls": "node scripts/rls-cross-org.mjs",
+    "test:canary": "node scripts/secret-canary.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
