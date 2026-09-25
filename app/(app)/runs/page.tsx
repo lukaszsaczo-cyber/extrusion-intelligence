@@ -43,7 +43,7 @@ export default async function RunsPage({ searchParams }: { searchParams: Promise
           <DataTable
             head={[t("runs.code"), t("runs.machine"), t("runs.status"), t("runs.start"), t("runs.end"), ""]}
             rows={runs.map((r) => [
-              <span key="c" className="num">{r.run_code}</span>, machineName.get(r.machine_id) ?? na,
+              <Link key="c" href={`/runs/${r.id}`} className="num text-teal hover:underline">{r.run_code}</Link>, machineName.get(r.machine_id) ?? na,
               t(`runStatus.${r.status}`), date(r.started_at), date(r.ended_at),
               <span key="i" className="flex gap-3 whitespace-nowrap">
                 <Link href={`/runs/${r.id}/import`} className="text-teal hover:underline">{t("import.action")}</Link>

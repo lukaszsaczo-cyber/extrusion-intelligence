@@ -279,3 +279,33 @@ export async function approvePlan(formData: FormData) {
   revalidatePath(back);
   redirect(back);
 }
+
+// ---- Stage 6: product samples and measurements (append-only evidence) ----
+
+const SampleInput = z.object({
+  run_id: uuid, sample_code: text(64),
+  taken_at: z.string().trim().transform((v) => (v === "" ? null : v))
+    .refine((v) => v === null || !Number.isNaN(Date.parse(v))).transform((v) => (v === null ? null : new Date(v).toISOString()))
+    .nullable().default(null),
+});
+
+export async function createProductSample(formData: FormData) {
+  const p = SampleInput.safeParse(fields(formData, Object.keys(SampleInput.shape)));
+  if (!p.success) return insertForOrg("/runs", "product_samples", null);
+  await insertForOrg(`/runs/${p.data.run_id}`, "product_samples", p.data);
+}
+
+const MeasurementInput = z.object({
+  run_id: uuid, product_sample_id: uuid, parameter: text(64),
+  value: z.string().trim().min(1).transform(Number).refine(Number.isFinite),
+  unit: optText(32), method: optText(200),
+});
+
+// Measurements cannot be edited or deleted (0012); a wrong value is corrected
+// by recording a new measurement.
+export async function addMeasurement(formData: FormData) {
+  const p = MeasurementInput.safeParse(fields(formData, Object.keys(MeasurementInput.shape)));
+  if (!p.success) return insertForOrg("/runs", "product_measurements", null);
+  const { run_id, ...row } = p.data;
+  await insertForOrg(`/runs/${run_id}`, "product_measurements", row);
+}

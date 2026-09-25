@@ -2,6 +2,13 @@ import "server-only";
 // The verified public contract (server/engine-contract) is the only integration boundary.
 import { createAdapter } from "./engine-contract/src/adapter";
 import { createGuard } from "./engine-contract/src/term-guard";
+import { compare as contractCompare } from "./engine-contract/src/sanitizer";
+import { METRICS } from "./engine-contract/src/contract";
+import type { CompareFn } from "@/lib/verification/checks";
+
+// Predicted vs actual uses the contract's own comparison and metric units.
+export const compareWithContract: CompareFn = contractCompare as CompareFn;
+export const METRIC_UNITS: Readonly<Record<string, string>> = METRICS as Record<string, string>;
 
 export type EngineHealth = { connected: boolean };
 

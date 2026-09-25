@@ -597,5 +597,61 @@
       "notApprovable": "This decision does not allow approval.",
       "already": "The plan is already approved."
     }
+  },
+  "runDetail": {
+    "title": "Run",
+    "data": "Run data",
+    "samples": "Data samples (rows)",
+    "parameters": "Parameters (process plan)",
+    "noPlan": "The run is not linked to a process plan.",
+    "quality": "Data quality status",
+    "noQuality": "No data quality check has been run.",
+    "pva": "Predicted vs actual",
+    "pvaHint": "Predictions come from the engine only. Actual is the median of clean samples (after quarantine) from the latest state refresh; units are not converted.",
+    "noPredictions": "No engine predictions for this run's plan. Comparison: NOT AVAILABLE.",
+    "metric": "Metric",
+    "predicted": "Predicted",
+    "actual": "Actual (median)",
+    "result": "Result",
+    "difference": "Difference",
+    "cmp": {
+      "WITHIN_RANGE": "Within range",
+      "OUTSIDE_RANGE": "Outside range",
+      "POINT_PREDICTION": "Point prediction",
+      "NOT_AVAILABLE": "Not available"
+    },
+    "pvaReason": {
+      "NO_SNAPSHOT": "no state refresh",
+      "NO_SIGNAL": "no signal with this code",
+      "AMBIGUOUS_SIGNAL": "several tags for this signal",
+      "UNIT_MISMATCH": "different unit",
+      "NO_CLEAN_DATA": "no clean samples"
+    },
+    "measurements": "Product measurements",
+    "noSamples": "No product samples.",
+    "noMeasurements": "No measurements.",
+    "sample": "Sample",
+    "method": "Method",
+    "recorded": "Recorded",
+    "appendOnly": "Measurements cannot be edited or deleted. A wrong value is corrected by a new measurement.",
+    "addSample": "Add sample",
+    "takenAt": "Taken at (date and time, optional)",
+    "addMeasurement": "Add measurement",
+    "productCheck": "Measurements against product targets",
+    "productHint": "App check: every target parameter must be measured in the same unit and lie within min–max. This is not a verification record.",
+    "measured": "Measured",
+    "productReason": {
+      "NO_TARGETS": "no product targets for the plan",
+      "NOT_MEASURED": "not measured",
+      "UNIT_MISMATCH": "different unit",
+      "NO_TOLERANCE": "target without min/max",
+      "OUTSIDE": "outside range"
+    },
+    "verification": "Verification",
+    "noVerification": "No verification recorded. Verification is recorded by the engine; missing data is not success.",
+    "kind": "Kind",
+    "evidence": "Evidence",
+    "evidenceSaved": "Evidence saved",
+    "evidenceNotSaved": "No evidence saved"
   }
 }

@@ -597,5 +597,61 @@
       "notApprovable": "Ta decyzja nie pozwala na zatwierdzenie.",
       "already": "Plan jest już zatwierdzony."
     }
+  },
+  "runDetail": {
+    "title": "Przebieg",
+    "data": "Dane przebiegu",
+    "samples": "Próbki pomiarowe (wiersze danych)",
+    "parameters": "Parametry (plan procesu)",
+    "noPlan": "Przebieg nie jest powiązany z planem procesu.",
+    "quality": "Status jakości danych",
+    "noQuality": "Nie wykonano kontroli jakości danych.",
+    "pva": "Przewidywane vs rzeczywiste",
+    "pvaHint": "Przewidywania pochodzą wyłącznie z silnika. Wartość rzeczywista to mediana czystych próbek (po kwarantannie) z ostatniego odświeżenia stanu; jednostki nie są przeliczane.",
+    "noPredictions": "Brak przewidywań silnika dla planu tego przebiegu. Porównanie: NIEDOSTĘPNE.",
+    "metric": "Metryka",
+    "predicted": "Przewidywane",
+    "actual": "Rzeczywiste (mediana)",
+    "result": "Wynik",
+    "difference": "Różnica",
+    "cmp": {
+      "WITHIN_RANGE": "W zakresie",
+      "OUTSIDE_RANGE": "Poza zakresem",
+      "POINT_PREDICTION": "Przewidywanie punktowe",
+      "NOT_AVAILABLE": "Niedostępne"
+    },
+    "pvaReason": {
+      "NO_SNAPSHOT": "brak odświeżenia stanu",
+      "NO_SIGNAL": "brak sygnału o tym kodzie",
+      "AMBIGUOUS_SIGNAL": "kilka tagów dla tego sygnału",
+      "UNIT_MISMATCH": "inna jednostka",
+      "NO_CLEAN_DATA": "brak czystych próbek"
+    },
+    "measurements": "Pomiary produktu",
+    "noSamples": "Brak próbek produktu.",
+    "noMeasurements": "Brak pomiarów.",
+    "sample": "Próbka",
+    "method": "Metoda",
+    "recorded": "Zapisano",
+    "appendOnly": "Pomiarów nie można edytować ani usuwać. Błędną wartość koryguje się nowym pomiarem.",
+    "addSample": "Dodaj próbkę",
+    "takenAt": "Pobrano (data i czas, opcjonalnie)",
+    "addMeasurement": "Dodaj pomiar",
+    "productCheck": "Sprawdzenie pomiarów względem celów produktu",
+    "productHint": "Sprawdzenie aplikacji: każdy parametr celu musi być zmierzony w tej samej jednostce i mieścić się w min–max. To nie jest zapis weryfikacji.",
+    "measured": "Zmierzono",
+    "productReason": {
+      "NO_TARGETS": "brak celów produktu dla planu",
+      "NOT_MEASURED": "nie zmierzono",
+      "UNIT_MISMATCH": "inna jednostka",
+      "NO_TOLERANCE": "cel bez min/max",
+      "OUTSIDE": "poza zakresem"
+    },
+    "verification": "Weryfikacja",
+    "noVerification": "Brak zapisanej weryfikacji. Weryfikację zapisuje silnik; brak danych nie jest sukcesem.",
+    "kind": "Rodzaj",
+    "evidence": "Dowody",
+    "evidenceSaved": "Zapisano dowody",
+    "evidenceNotSaved": "Brak zapisanych dowodów"
   }
 }

@@ -80,3 +80,25 @@ test("header problems are reported", () => {
   assert.equal(r4.ok, false);
   if (!r4.ok) assert.equal(r4.errors[0]!.code, "BOTH_COMMA");
 });
+
+test("formulas stored as text are SUSPECT with the raw text kept, never evaluated", () => {
+  const csv = [
+    "time,P1,T1",
+    '2026-09-25T10:00:00Z,=SUM(B2:B4),=120.5',
+    '2026-09-25T10:00:01Z,"=AVERAGE(B2,B3)",\'180',
+    "2026-09-25T10:00:02Z,@SUM(B2),121",
+  ].join("\n") + "\n";
+  const r = buildSamples(csv, base);
+  assert.equal(r.ok, true);
+  if (!r.ok) return;
+  const cells = r.samples.map((s) => [s.signal, s.quality, s.value, s.raw_text]);
+  assert.deepEqual(cells, [
+    ["P1", "SUSPECT", null, "=SUM(B2:B4)"],
+    ["T1", "SUSPECT", null, "=120.5"],
+    ["P1", "SUSPECT", null, "=AVERAGE(B2,B3)"],
+    ["T1", "SUSPECT", null, "'180"],
+    ["P1", "SUSPECT", null, "@SUM(B2)"],
+    ["T1", "VALID", 121, "121"],
+  ]);
+  assert.deepEqual(r.counts, { VALID: 1, SUSPECT: 5, MISSING: 0, UNMAPPED: 0 });
+});
