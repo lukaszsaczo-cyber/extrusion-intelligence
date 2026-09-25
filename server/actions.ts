@@ -107,6 +107,30 @@ export async function createRun(formData: FormData) {
   await insertForOrg("/runs", "runs", p.success ? p.data : null);
 }
 
+const SignalInput = z.object({
+  code: z.string().trim().regex(/^[a-z][a-z0-9_]{0,63}$/),
+  category: z.enum(["PROCESS", "MATERIAL", "PRODUCT", "MACHINE_STATE"]),
+  canonical_unit: optText(32),
+  description: optText(500),
+});
+
+export async function createSignalDefinition(formData: FormData) {
+  const p = SignalInput.safeParse(fields(formData, Object.keys(SignalInput.shape)));
+  await insertForOrg("/machines", "signal_definitions", p.success ? p.data : null);
+}
+
+const TagInput = z.object({
+  machine_id: uuid,
+  tag: text(200),
+  signal: z.string().trim().regex(/^[a-z][a-z0-9_]{0,63}$/),
+  unit: optText(32),
+});
+
+export async function createSensorTag(formData: FormData) {
+  const p = TagInput.safeParse(fields(formData, Object.keys(TagInput.shape)));
+  await insertForOrg("/machines", "machine_sensor_tags", p.success ? p.data : null);
+}
+
 export async function renameOrganization(formData: FormData) {
   const p = OrgName.safeParse(formData.get("name"));
   if (!p.success) redirect("/settings?e=invalid");

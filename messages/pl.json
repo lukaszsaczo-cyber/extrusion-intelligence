@@ -2,7 +2,11 @@
   "app": {
     "title": "Extrusion Intelligence",
     "subtitle": "Wsparcie decyzji w procesie ekstruzji dwuślimakowej.",
-    "points": { "preflight": "Ocena wykonalności przed uruchomieniem", "verify": "Weryfikacja procesu", "evidence": "Identyfikowalne dowody" },
+    "points": {
+      "preflight": "Ocena wykonalności przed uruchomieniem",
+      "verify": "Weryfikacja procesu",
+      "evidence": "Identyfikowalne dowody"
+    },
     "footer": "Prywatny silnik procesu. Tryb doradczy tylko do odczytu."
   },
   "login": {
@@ -28,9 +32,23 @@
     "audit": "Audyt",
     "settings": "Ustawienia"
   },
-  "top": { "organization": "Organizacja", "role": "Rola", "engine": "Silnik", "signOut": "Wyloguj", "language": "Język" },
-  "role": { "ADMIN": "Administrator", "ENGINEER": "Inżynier", "OPERATOR": "Operator", "VIEWER": "Podgląd" },
-  "engine": { "connected": "Prywatny silnik procesu połączony.", "notConnected": "Prywatny silnik procesu nie jest połączony." },
+  "top": {
+    "organization": "Organizacja",
+    "role": "Rola",
+    "engine": "Silnik",
+    "signOut": "Wyloguj",
+    "language": "Język"
+  },
+  "role": {
+    "ADMIN": "Administrator",
+    "ENGINEER": "Inżynier",
+    "OPERATOR": "Operator",
+    "VIEWER": "Podgląd"
+  },
+  "engine": {
+    "connected": "Prywatny silnik procesu połączony.",
+    "notConnected": "Prywatny silnik procesu nie jest połączony."
+  },
   "dashboard": {
     "title": "Pulpit",
     "machines": "Maszyny",
@@ -38,8 +56,17 @@
     "engine": "Silnik",
     "recentRuns": "Ostatnie przebiegi",
     "noRuns": "Brak przebiegów. Zaimportuj dane przebiegu, aby je tu zobaczyć.",
-    "col": { "run": "Przebieg", "machine": "Maszyna", "status": "Status", "start": "Start" },
-    "actions": { "newProduct": "Nowy produkt", "analyze": "Analizuj recepturę", "import": "Importuj przebieg" }
+    "col": {
+      "run": "Przebieg",
+      "machine": "Maszyna",
+      "status": "Status",
+      "start": "Start"
+    },
+    "actions": {
+      "newProduct": "Nowy produkt",
+      "analyze": "Analizuj recepturę",
+      "import": "Importuj przebieg"
+    }
   },
   "onboarding": {
     "title": "Utwórz organizację",
@@ -48,8 +75,15 @@
     "create": "Utwórz organizację",
     "invalid": "Podaj nazwę od 1 do 200 znaków."
   },
-  "placeholder": { "body": "Ten moduł jest w przygotowaniu. Nie wyświetla żadnych danych przykładowych." },
-  "runStatus": { "PLANNED": "Zaplanowany", "RUNNING": "W toku", "COMPLETED": "Zakończony", "ABORTED": "Przerwany" },
+  "placeholder": {
+    "body": "Ten moduł jest w przygotowaniu. Nie wyświetla żadnych danych przykładowych."
+  },
+  "runStatus": {
+    "PLANNED": "Zaplanowany",
+    "RUNNING": "W toku",
+    "COMPLETED": "Zakończony",
+    "ABORTED": "Przerwany"
+  },
   "common": {
     "notAvailable": "Niedostępne",
     "plcNotice": "Tylko wartość planowana. Aplikacja nie wysyła polecenia do maszyny."
@@ -61,7 +95,11 @@
     "forbidden": "Twoja rola nie pozwala na tę zmianę.",
     "failed": "Nie udało się zapisać. Spróbuj ponownie."
   },
-  "form": { "add": "Dodaj", "save": "Zapisz", "readOnly": "Twoja rola pozwala przeglądać te dane, ale nie zmieniać." },
+  "form": {
+    "add": "Dodaj",
+    "save": "Zapisz",
+    "readOnly": "Twoja rola pozwala przeglądać te dane, ale nie zmieniać."
+  },
   "machines": {
     "title": "Maszyny",
     "list": "Maszyny w organizacji",
@@ -124,5 +162,120 @@
     "user": "Użytkownik",
     "role": "Rola",
     "you": "ty"
+  },
+  "import": {
+    "title": "Import danych przebiegu",
+    "action": "Importuj",
+    "back": "Wróć do przebiegów",
+    "run": "Przebieg",
+    "machine": "Maszyna",
+    "files": "Zaimportowane pliki",
+    "noFiles": "Brak zaimportowanych plików dla tego przebiegu.",
+    "filename": "Plik",
+    "rows": "Wiersze",
+    "columns": "Kolumny",
+    "sha": "SHA-256",
+    "importedAt": "Zaimportowano",
+    "form": "Importuj plik",
+    "fileHint": "Eksport CSV lub tekstowy, maks. 2 MB i 200 000 wartości. Jedna kolumna czasu i po jednej kolumnie na tag.",
+    "file": "Plik",
+    "delimiter": "Separator pól",
+    "delimiterComma": "Przecinek (,)",
+    "delimiterSemicolon": "Średnik (;)",
+    "delimiterTab": "Tabulator",
+    "decimal": "Separator dziesiętny",
+    "decimalDot": "Kropka (12.5)",
+    "decimalComma": "Przecinek (12,5)",
+    "tsColumn": "Nagłówek kolumny czasu",
+    "tsFormat": "Format czasu",
+    "tsIso": "ISO 8601 ze strefą (2026-09-25T10:00:00+02:00)",
+    "tsEpochS": "Czas uniksowy, sekundy",
+    "tsEpochMs": "Czas uniksowy, milisekundy",
+    "sampling": "Metadane próbkowania",
+    "samplingHint": "Zostaw puste to, czego nie wiesz. Zapisywane raz na przebieg i nie do zmiany później.",
+    "samplingRecorded": "Już zapisane dla tego przebiegu. Kolejny plik musi podać te same wartości albo zostawić wszystkie pola puste.",
+    "interval": "Okres próbkowania [ms]",
+    "resolution": "Rozdzielczość czasu [ms]",
+    "tsSource": "Źródło czasu",
+    "missingPolicy": "Brakujące próbki w eksporcie",
+    "timezone": "Strefa czasowa źródła",
+    "unknown": "Nieznane",
+    "source": {
+      "PLC": "PLC",
+      "HISTORIAN": "Historian",
+      "IMPORT_FILE": "Plik importu",
+      "MANUAL": "Ręcznie"
+    },
+    "policy": {
+      "NOT_FILLED": "Pozostawione puste",
+      "MARKED_MISSING": "Oznaczone jako brak",
+      "FORWARD_FILLED": "Uzupełnione poprzednią wartością",
+      "INTERPOLATED": "Interpolowane"
+    },
+    "acceptUnmapped": "Importuj niezmapowane kolumny tylko jako tekst (pozostaną UNMAPPED)",
+    "submit": "Importuj plik",
+    "submitting": "Importowanie…",
+    "tags": "Tagi zmapowane na sygnały dla tej maszyny",
+    "tagsHint": "Jako liczby odczytywane są tylko kolumny, których nagłówek pasuje do zmapowanego tagu. Zmapuj tagi w sekcji Maszyny przed importem.",
+    "noTags": "Brak zmapowanych tagów dla tej maszyny. Każda kolumna zostałaby zapisana jako tekst (UNMAPPED).",
+    "ok": "Zaimportowano {rows} wierszy × {columns} kolumn z pliku {file}.",
+    "range": "Zakres czasu: {first} – {last}",
+    "unmappedStored": "Zapisane tylko jako tekst (UNMAPPED): {columns}",
+    "unmappedBlock": "Te kolumny nie są zmapowane na sygnał: {columns}. Zmapuj je w sekcji Maszyny albo zaznacz pole poniżej, aby zapisać je tylko jako tekst.",
+    "quality": {
+      "VALID": "Poprawne",
+      "SUSPECT": "Podejrzane",
+      "MISSING": "Brakujące",
+      "UNMAPPED": "Niezmapowane"
+    },
+    "err": {
+      "invalid": "Sprawdź ustawienia importu.",
+      "forbidden": "Twoja rola nie pozwala na import danych.",
+      "failed": "Import nie powiódł się. Nic nie zostało zapisane.",
+      "tooLarge": "Plik jest większy niż 2 MB.",
+      "empty": "Wybierz niepusty plik.",
+      "duplicate": "Ten plik został już zaimportowany do tego przebiegu.",
+      "samplingConflict": "Metadane próbkowania różnią się od wartości już zapisanych dla tego przebiegu.",
+      "notFound": "Nie znaleziono przebiegu."
+    },
+    "parse": {
+      "BOTH_COMMA": "Separator pól i separator dziesiętny nie mogą jednocześnie być przecinkiem.",
+      "NO_DATA_ROWS": "Plik musi mieć wiersz nagłówka i co najmniej jeden wiersz danych.",
+      "EMPTY_HEADER": "Kolumna {column} ma pusty nagłówek.",
+      "DUPLICATE_HEADER": "Powtórzony nagłówek kolumny „{header}”.",
+      "TS_COLUMN_MISSING": "Nie znaleziono kolumny czasu „{column}” w nagłówku.",
+      "NO_DATA_COLUMNS": "Plik nie ma kolumn danych poza kolumną czasu.",
+      "TOO_MANY_VALUES": "Plik ma {values} wartości; limit na jeden import to {limit}.",
+      "FIELD_COUNT": "Wiersz {line}: oczekiwano {expected} pól, jest {found}.",
+      "BAD_TIMESTAMP": "Wiersz {line}: czas „{value}” nie pasuje do wybranego formatu.",
+      "TOO_MANY_ERRORS": "Przerwano po {limit} błędach."
+    },
+    "nothingSaved": "Nic nie zostało zapisane."
+  },
+  "signals": {
+    "title": "Słownik sygnałów",
+    "empty": "Brak zdefiniowanych sygnałów.",
+    "add": "Dodaj sygnał",
+    "code": "Kod (np. screw_rpm)",
+    "category": "Kategoria",
+    "unit": "Jednostka kanoniczna",
+    "description": "Opis",
+    "cat": {
+      "PROCESS": "Proces",
+      "MATERIAL": "Surowiec",
+      "PRODUCT": "Produkt",
+      "MACHINE_STATE": "Stan maszyny"
+    }
+  },
+  "tags": {
+    "title": "Tagi czujników",
+    "empty": "Brak tagów.",
+    "add": "Zmapuj tag",
+    "noSignals": "Najpierw dodaj sygnał do słownika.",
+    "machine": "Maszyna",
+    "tag": "Tag / nagłówek kolumny",
+    "signal": "Sygnał",
+    "unit": "Jednostka (opcjonalnie)",
+    "unmapped": "niezmapowany"
   }
 }

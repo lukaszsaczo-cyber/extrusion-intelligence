@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getT } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
@@ -40,10 +41,11 @@ export default async function RunsPage({ searchParams }: { searchParams: Promise
       <Panel title={t("runs.list")}>
         {runs.length === 0 ? <Empty text={t("runs.empty")} /> : (
           <DataTable
-            head={[t("runs.code"), t("runs.machine"), t("runs.status"), t("runs.start"), t("runs.end")]}
+            head={[t("runs.code"), t("runs.machine"), t("runs.status"), t("runs.start"), t("runs.end"), ""]}
             rows={runs.map((r) => [
               <span key="c" className="num">{r.run_code}</span>, machineName.get(r.machine_id) ?? na,
               t(`runStatus.${r.status}`), date(r.started_at), date(r.ended_at),
+              <Link key="i" href={`/runs/${r.id}/import`} className="text-teal hover:underline">{t("import.action")}</Link>,
             ])}
           />
         )}

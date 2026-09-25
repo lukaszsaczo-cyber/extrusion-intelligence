@@ -2,7 +2,11 @@
   "app": {
     "title": "Extrusion Intelligence",
     "subtitle": "Decision support for twin-screw extrusion.",
-    "points": { "preflight": "Pre-run feasibility", "verify": "Process verification", "evidence": "Traceable evidence" },
+    "points": {
+      "preflight": "Pre-run feasibility",
+      "verify": "Process verification",
+      "evidence": "Traceable evidence"
+    },
     "footer": "Private process engine. Read-only advisory mode."
   },
   "login": {
@@ -28,9 +32,23 @@
     "audit": "Audit",
     "settings": "Settings"
   },
-  "top": { "organization": "Organization", "role": "Role", "engine": "Engine", "signOut": "Sign out", "language": "Language" },
-  "role": { "ADMIN": "Admin", "ENGINEER": "Engineer", "OPERATOR": "Operator", "VIEWER": "Viewer" },
-  "engine": { "connected": "Private process engine connected.", "notConnected": "Private process engine not connected." },
+  "top": {
+    "organization": "Organization",
+    "role": "Role",
+    "engine": "Engine",
+    "signOut": "Sign out",
+    "language": "Language"
+  },
+  "role": {
+    "ADMIN": "Admin",
+    "ENGINEER": "Engineer",
+    "OPERATOR": "Operator",
+    "VIEWER": "Viewer"
+  },
+  "engine": {
+    "connected": "Private process engine connected.",
+    "notConnected": "Private process engine not connected."
+  },
   "dashboard": {
     "title": "Dashboard",
     "machines": "Machines",
@@ -38,8 +56,17 @@
     "engine": "Engine",
     "recentRuns": "Recent runs",
     "noRuns": "No runs yet. Import run data to see it here.",
-    "col": { "run": "Run", "machine": "Machine", "status": "Status", "start": "Start" },
-    "actions": { "newProduct": "New Product", "analyze": "Analyze Recipe", "import": "Import Run" }
+    "col": {
+      "run": "Run",
+      "machine": "Machine",
+      "status": "Status",
+      "start": "Start"
+    },
+    "actions": {
+      "newProduct": "New Product",
+      "analyze": "Analyze Recipe",
+      "import": "Import Run"
+    }
   },
   "onboarding": {
     "title": "Create an organization",
@@ -48,8 +75,15 @@
     "create": "Create organization",
     "invalid": "Enter a name between 1 and 200 characters."
   },
-  "placeholder": { "body": "This module is in preparation. It shows no sample data." },
-  "runStatus": { "PLANNED": "Planned", "RUNNING": "Running", "COMPLETED": "Completed", "ABORTED": "Aborted" },
+  "placeholder": {
+    "body": "This module is in preparation. It shows no sample data."
+  },
+  "runStatus": {
+    "PLANNED": "Planned",
+    "RUNNING": "Running",
+    "COMPLETED": "Completed",
+    "ABORTED": "Aborted"
+  },
   "common": {
     "notAvailable": "Not available",
     "plcNotice": "Planned value only. No machine command will be sent."
@@ -61,7 +95,11 @@
     "forbidden": "Your role does not allow this change.",
     "failed": "Could not save. Try again."
   },
-  "form": { "add": "Add", "save": "Save", "readOnly": "Your role can view this data but not change it." },
+  "form": {
+    "add": "Add",
+    "save": "Save",
+    "readOnly": "Your role can view this data but not change it."
+  },
   "machines": {
     "title": "Machines",
     "list": "Machines in the organization",
@@ -124,5 +162,120 @@
     "user": "User",
     "role": "Role",
     "you": "you"
+  },
+  "import": {
+    "title": "Import run data",
+    "action": "Import",
+    "back": "Back to runs",
+    "run": "Run",
+    "machine": "Machine",
+    "files": "Imported files",
+    "noFiles": "No files imported for this run yet.",
+    "filename": "File",
+    "rows": "Rows",
+    "columns": "Columns",
+    "sha": "SHA-256",
+    "importedAt": "Imported",
+    "form": "Import a file",
+    "fileHint": "CSV or text export, max 2 MB, 200,000 values. One timestamp column and one column per tag.",
+    "file": "File",
+    "delimiter": "Field separator",
+    "delimiterComma": "Comma (,)",
+    "delimiterSemicolon": "Semicolon (;)",
+    "delimiterTab": "Tab",
+    "decimal": "Decimal separator",
+    "decimalDot": "Dot (12.5)",
+    "decimalComma": "Comma (12,5)",
+    "tsColumn": "Timestamp column header",
+    "tsFormat": "Timestamp format",
+    "tsIso": "ISO 8601 with time zone (2026-09-25T10:00:00+02:00)",
+    "tsEpochS": "Unix time, seconds",
+    "tsEpochMs": "Unix time, milliseconds",
+    "sampling": "Sampling metadata",
+    "samplingHint": "Leave empty what you do not know. Recorded once per run and cannot be changed later.",
+    "samplingRecorded": "Already recorded for this run. A new file must declare the same values or leave all fields empty.",
+    "interval": "Sampling interval [ms]",
+    "resolution": "Timestamp resolution [ms]",
+    "tsSource": "Timestamp source",
+    "missingPolicy": "Missing samples in the export",
+    "timezone": "Source time zone",
+    "unknown": "Unknown",
+    "source": {
+      "PLC": "PLC",
+      "HISTORIAN": "Historian",
+      "IMPORT_FILE": "Import file",
+      "MANUAL": "Manual"
+    },
+    "policy": {
+      "NOT_FILLED": "Left empty",
+      "MARKED_MISSING": "Marked as missing",
+      "FORWARD_FILLED": "Forward-filled",
+      "INTERPOLATED": "Interpolated"
+    },
+    "acceptUnmapped": "Import unmapped columns as text only (they will stay UNMAPPED)",
+    "submit": "Import file",
+    "submitting": "Importing…",
+    "tags": "Tags mapped to signals on this machine",
+    "tagsHint": "Only columns whose header matches a mapped tag are read as numbers. Map tags on the Machines page before importing.",
+    "noTags": "No tags mapped on this machine. Every column would be stored as text (UNMAPPED).",
+    "ok": "Imported {rows} rows × {columns} columns from {file}.",
+    "range": "Time range: {first} – {last}",
+    "unmappedStored": "Stored as text only (UNMAPPED): {columns}",
+    "unmappedBlock": "These columns are not mapped to a signal: {columns}. Map them on the Machines page, or tick the box below to store them as text only.",
+    "quality": {
+      "VALID": "Valid",
+      "SUSPECT": "Suspect",
+      "MISSING": "Missing",
+      "UNMAPPED": "Unmapped"
+    },
+    "err": {
+      "invalid": "Check the import settings.",
+      "forbidden": "Your role does not allow importing data.",
+      "failed": "Import failed. Nothing was saved.",
+      "tooLarge": "The file is larger than 2 MB.",
+      "empty": "Choose a non-empty file.",
+      "duplicate": "This file has already been imported into this run.",
+      "samplingConflict": "Sampling metadata differs from the values already recorded for this run.",
+      "notFound": "Run not found."
+    },
+    "parse": {
+      "BOTH_COMMA": "Field separator and decimal separator cannot both be a comma.",
+      "NO_DATA_ROWS": "The file needs a header row and at least one data row.",
+      "EMPTY_HEADER": "Column {column} has an empty header.",
+      "DUPLICATE_HEADER": "Duplicate column header \"{header}\".",
+      "TS_COLUMN_MISSING": "Timestamp column \"{column}\" was not found in the header.",
+      "NO_DATA_COLUMNS": "The file has no data columns besides the timestamp.",
+      "TOO_MANY_VALUES": "The file has {values} values; the limit per import is {limit}.",
+      "FIELD_COUNT": "Line {line}: expected {expected} fields, found {found}.",
+      "BAD_TIMESTAMP": "Line {line}: timestamp \"{value}\" does not match the selected format.",
+      "TOO_MANY_ERRORS": "Stopped after {limit} errors."
+    },
+    "nothingSaved": "Nothing was saved."
+  },
+  "signals": {
+    "title": "Signal dictionary",
+    "empty": "No signals defined yet.",
+    "add": "Add signal",
+    "code": "Code (e.g. screw_rpm)",
+    "category": "Category",
+    "unit": "Canonical unit",
+    "description": "Description",
+    "cat": {
+      "PROCESS": "Process",
+      "MATERIAL": "Material",
+      "PRODUCT": "Product",
+      "MACHINE_STATE": "Machine state"
+    }
+  },
+  "tags": {
+    "title": "Sensor tags",
+    "empty": "No tags yet.",
+    "add": "Map tag",
+    "noSignals": "Add a signal to the dictionary first.",
+    "machine": "Machine",
+    "tag": "Tag / column header",
+    "signal": "Signal",
+    "unit": "Unit (optional)",
+    "unmapped": "not mapped"
   }
 }
