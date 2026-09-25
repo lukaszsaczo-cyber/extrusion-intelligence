@@ -66,7 +66,38 @@
       "newProduct": "Nowy produkt",
       "analyze": "Analizuj recepturę",
       "import": "Importuj przebieg"
-    }
+    },
+    "activeRuns": "Aktywne przebiegi",
+    "audit": "Rekordy audytu",
+    "recentDecisions": "Ostatnie decyzje",
+    "noDecisions": "Brak decyzji preflight.",
+    "decision": {
+      "READY_FOR_OPERATOR_REVIEW": "Gotowe do przeglądu operatora",
+      "SHADOW_TEST_ONLY": "Tylko test w cieniu",
+      "TEST_REQUIRED": "Wymagany test",
+      "CHANGE_FORMULATION": "Zmień recepturę",
+      "CHANGE_CONFIGURATION": "Zmień konfigurację",
+      "DO_NOT_RUN": "Nie uruchamiać",
+      "NEEDS_DATA": "Potrzebne dane",
+      "NOT_APPLICABLE": "Nie dotyczy"
+    },
+    "recentVerifications": "Ostatnie weryfikacje",
+    "noVerifications": "Brak weryfikacji.",
+    "verificationKind": {
+      "PROCESS": "Proces",
+      "PRODUCT": "Produkt",
+      "FINAL": "Końcowa"
+    },
+    "verificationState": {
+      "VERIFIED_PASS": "Zweryfikowano: PASS",
+      "VERIFIED_FAIL": "Zweryfikowano: FAIL",
+      "INCONCLUSIVE": "Nierozstrzygnięte",
+      "INCOMPLETE": "Niekompletne"
+    },
+    "alerts": "Alerty",
+    "alertsNote": "Brak źródła alertów: aplikacja nie ma jeszcze zdefiniowanych reguł alertów ani połączenia na żywo.",
+    "auditTitle": "Audyt",
+    "auditLast": "Ostatni rekord"
   },
   "onboarding": {
     "title": "Utwórz organizację",
@@ -384,5 +415,64 @@
     "gr_COUPLED_OK": "Co najmniej dwa sygnały procesu z wystarczającą liczbą czystych próbek.",
     "gr_TOO_FEW_COUPLED_SIGNALS": "Mniej niż dwa sygnały procesu z co najmniej 10 czystymi próbkami.",
     "gr_COMPARISON_RUNS_REQUIRED": "Wymaga przebiegów porównawczych (ta sama receptura na innej maszynie, inna receptura na tej maszynie)."
+  },
+  "console": {
+    "title": "Konsola maszyny",
+    "pick": "Wybierz maszynę",
+    "open": "Otwórz konsolę",
+    "back": "Wszystkie maszyny",
+    "noLiveV1": "Wersja 1 nie ma połączenia na żywo z maszyną. Konsola pokazuje wyłącznie zapisane dane.",
+    "live": "Podgląd na żywo",
+    "liveReason": {
+      "NO_LIVE_SOURCE": "Brak źródła danych na żywo. Pliki CSV trafiają do danych przebiegu i nigdy nie są pokazywane jako odczyt na żywo."
+    },
+    "state": "Stan",
+    "stateNote": "Na podstawie zapisanych przebiegów, nie odczytu z maszyny.",
+    "recorded": {
+      "NO_RUNS": "Brak zapisanych przebiegów tej maszyny.",
+      "RECORDED_RUNNING": "Zapisany przebieg ma status „W toku”.",
+      "NO_RECORDED_RUNNING": "Żaden zapisany przebieg nie ma statusu „W toku”."
+    },
+    "configuration": "Konfiguracja",
+    "controller": "Wersja sterownika",
+    "software": "Wersja oprogramowania",
+    "identification": "Identyfikacja",
+    "confidence": "Pewność rozpoznania",
+    "idMode": {
+      "AUTO": "Automatyczna",
+      "MANUAL": "Ręczna"
+    },
+    "conf": {
+      "HIGH": "Wysoka",
+      "MEDIUM": "Średnia",
+      "LOW": "Niska",
+      "NOT_AVAILABLE": "Niedostępne"
+    },
+    "parameters": "Parametry",
+    "limits": "Ograniczenia",
+    "noLimits": "Brak zapisanych ograniczeń.",
+    "parameter": "Parametr",
+    "bound": "Granica",
+    "boundValue": {
+      "MIN": "Minimum",
+      "MAX": "Maksimum"
+    },
+    "value": "Wartość",
+    "unit": "Jednostka",
+    "source": "Źródło",
+    "sourceValue": {
+      "CATALOG": "Katalog",
+      "CONFIRMED_ON_MACHINE": "Potwierdzone na maszynie"
+    },
+    "confirmedAt": "Potwierdzono",
+    "noTags": "Brak tagów czujników.",
+    "tag": "Tag",
+    "signal": "Sygnał",
+    "history": "Historia",
+    "historyNote": "Dane przebiegów pochodzą z importowanych plików. To historia, nie podgląd na żywo.",
+    "noRuns": "Brak przebiegów tej maszyny.",
+    "dataFiles": "Dane przebiegu",
+    "noFiles": "Brak zaimportowanych plików",
+    "importedAt": "import"
   }
 }

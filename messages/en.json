@@ -66,7 +66,38 @@
       "newProduct": "New Product",
       "analyze": "Analyze Recipe",
       "import": "Import Run"
-    }
+    },
+    "activeRuns": "Active runs",
+    "audit": "Audit records",
+    "recentDecisions": "Recent decisions",
+    "noDecisions": "No preflight decisions.",
+    "decision": {
+      "READY_FOR_OPERATOR_REVIEW": "Ready for operator review",
+      "SHADOW_TEST_ONLY": "Shadow test only",
+      "TEST_REQUIRED": "Test required",
+      "CHANGE_FORMULATION": "Change formulation",
+      "CHANGE_CONFIGURATION": "Change configuration",
+      "DO_NOT_RUN": "Do not run",
+      "NEEDS_DATA": "Needs data",
+      "NOT_APPLICABLE": "Not applicable"
+    },
+    "recentVerifications": "Recent verifications",
+    "noVerifications": "No verifications.",
+    "verificationKind": {
+      "PROCESS": "Process",
+      "PRODUCT": "Product",
+      "FINAL": "Final"
+    },
+    "verificationState": {
+      "VERIFIED_PASS": "Verified: PASS",
+      "VERIFIED_FAIL": "Verified: FAIL",
+      "INCONCLUSIVE": "Inconclusive",
+      "INCOMPLETE": "Incomplete"
+    },
+    "alerts": "Alerts",
+    "alertsNote": "No alert source: the app has no alert rules defined and no live connection yet.",
+    "auditTitle": "Audit",
+    "auditLast": "Latest record"
   },
   "onboarding": {
     "title": "Create an organization",
@@ -384,5 +415,64 @@
     "gr_COUPLED_OK": "At least two process signals with enough clean samples.",
     "gr_TOO_FEW_COUPLED_SIGNALS": "Fewer than two process signals with at least 10 clean samples.",
     "gr_COMPARISON_RUNS_REQUIRED": "Needs comparison runs (same recipe on another machine, other recipe on this machine)."
+  },
+  "console": {
+    "title": "Machine console",
+    "pick": "Choose a machine",
+    "open": "Open console",
+    "back": "All machines",
+    "noLiveV1": "Version 1 has no live connection to the machine. The console shows recorded data only.",
+    "live": "Live view",
+    "liveReason": {
+      "NO_LIVE_SOURCE": "No live data source. CSV files go to run data and are never shown as a live reading."
+    },
+    "state": "State",
+    "stateNote": "Based on recorded runs, not a reading from the machine.",
+    "recorded": {
+      "NO_RUNS": "No recorded runs for this machine.",
+      "RECORDED_RUNNING": "A recorded run has status “Running”.",
+      "NO_RECORDED_RUNNING": "No recorded run has status “Running”."
+    },
+    "configuration": "Configuration",
+    "controller": "Controller version",
+    "software": "Software version",
+    "identification": "Identification",
+    "confidence": "Detection confidence",
+    "idMode": {
+      "AUTO": "Automatic",
+      "MANUAL": "Manual"
+    },
+    "conf": {
+      "HIGH": "High",
+      "MEDIUM": "Medium",
+      "LOW": "Low",
+      "NOT_AVAILABLE": "Not available"
+    },
+    "parameters": "Parameters",
+    "limits": "Limits",
+    "noLimits": "No recorded limits.",
+    "parameter": "Parameter",
+    "bound": "Bound",
+    "boundValue": {
+      "MIN": "Minimum",
+      "MAX": "Maximum"
+    },
+    "value": "Value",
+    "unit": "Unit",
+    "source": "Source",
+    "sourceValue": {
+      "CATALOG": "Catalog",
+      "CONFIRMED_ON_MACHINE": "Confirmed on machine"
+    },
+    "confirmedAt": "Confirmed",
+    "noTags": "No sensor tags.",
+    "tag": "Tag",
+    "signal": "Signal",
+    "history": "History",
+    "historyNote": "Run data comes from imported files. This is history, not a live view.",
+    "noRuns": "No runs for this machine.",
+    "dataFiles": "Run data",
+    "noFiles": "No imported files",
+    "importedAt": "imported"
   }
 }

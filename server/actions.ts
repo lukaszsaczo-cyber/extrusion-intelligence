@@ -131,6 +131,27 @@ export async function createSensorTag(formData: FormData) {
   await insertForOrg("/machines", "machine_sensor_tags", p.success ? p.data : null);
 }
 
+const LimitInput = z.object({
+  machine_id: uuid,
+  parameter: text(64),
+  bound: z.enum(["MIN", "MAX"]),
+  value: z.string().trim().min(1).transform(Number).refine(Number.isFinite),
+  unit: text(32),
+  source: z.enum(["CATALOG", "CONFIRMED_ON_MACHINE"]),
+});
+
+// A limit marked CONFIRMED_ON_MACHINE records who confirmed it and when (the
+// database requires both); a CATALOG limit carries neither.
+export async function createMachineLimit(formData: FormData) {
+  const p = LimitInput.safeParse(fields(formData, Object.keys(LimitInput.shape)));
+  if (!p.success) return insertForOrg("/machine-console", "machine_confirmed_limits", null);
+  const ctx = await getSessionContext();
+  const confirmed = p.data.source === "CONFIRMED_ON_MACHINE" && ctx
+    ? { confirmed_by: ctx.userId, confirmed_at: new Date().toISOString() }
+    : {};
+  await insertForOrg(`/machine-console/${p.data.machine_id}`, "machine_confirmed_limits", { ...p.data, ...confirmed });
+}
+
 export async function renameOrganization(formData: FormData) {
   const p = OrgName.safeParse(formData.get("name"));
   if (!p.success) redirect("/settings?e=invalid");

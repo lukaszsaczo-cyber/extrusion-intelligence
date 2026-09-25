@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getT } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
@@ -53,11 +54,12 @@ export default async function MachinesPage({ searchParams }: { searchParams: Pro
           <DataTable
             head={[t("machines.manufacturer"), t("machines.model"), t("machines.serial"), t("machines.site"),
               t("machines.screwDiameter"), t("machines.ld"), t("machines.power"), t("machines.maxRpm"),
-              t("machines.maxPressure"), t("machines.zones")]}
+              t("machines.maxPressure"), t("machines.zones"), ""]}
             rows={machines.map((m) => [
               m.manufacturer ?? na, m.model ?? na, m.serial_number ?? na, siteName.get(m.site_id) ?? na,
               n(m.screw_diameter_mm), n(m.l_d), n(m.drive_power_kw), n(m.configured_max_rpm),
               n(m.configured_max_pressure_bar), n(m.zone_count),
+              <Link key="c" href={`/machine-console/${m.id}`} className="whitespace-nowrap text-teal hover:underline">{t("console.open")}</Link>,
             ])}
           />
         )}
