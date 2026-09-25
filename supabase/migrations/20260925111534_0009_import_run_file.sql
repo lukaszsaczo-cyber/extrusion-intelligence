@@ -8,6 +8,8 @@
 -- SECURITY INVOKER: every insert runs under the caller's RLS, so the same roles
 -- as before may import (ADMIN/ENGINEER/OPERATOR); no privilege is added.
 -- The same file (same SHA-256) cannot be imported twice into the same run.
+--
+-- Applied to production 2026-09-25 as version 20260925111534.
 
 alter table public.run_files
   add constraint run_files_run_id_sha256_key unique (run_id, sha256);
