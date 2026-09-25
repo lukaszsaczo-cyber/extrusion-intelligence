@@ -10,6 +10,8 @@
 --                  never a forced diagnosis.
 --
 -- Both append-only; ADMIN/ENGINEER may insert. Nothing is seeded.
+--
+-- Applied to production 2026-09-25 as version 20260925120519.
 
 create type public.diagnosis_status as enum ('DIAGNOSED', 'INCONCLUSIVE', 'INSUFFICIENT_DATA');
 
