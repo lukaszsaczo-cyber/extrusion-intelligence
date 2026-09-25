@@ -10,8 +10,8 @@
 -- Scope: anon and authenticated (every PostgREST caller). service_role and the
 -- postgres owner keep full access for administrative maintenance; that path
 -- bypasses RLS by design and is not reachable from the browser.
-
-begin;
+--
+-- Applied to production 2026-09-25 as version 20260925104623 (Supabase wraps it in a transaction).
 
 -- 1. RLS: no UPDATE/DELETE policies means no row is ever updatable or deletable.
 drop policy if exists upd on public.run_metrics;
@@ -44,5 +44,3 @@ alter table public.run_metrics
   add constraint run_metrics_run_file_id_organization_id_fkey
     foreign key (run_file_id, organization_id) references public.run_files (id, organization_id)
     on delete no action;
-
-commit;
