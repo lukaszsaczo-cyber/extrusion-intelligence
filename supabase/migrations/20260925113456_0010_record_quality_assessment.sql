@@ -5,6 +5,8 @@
 -- writes the assessment, its per-signal results and its quarantined samples in
 -- ONE transaction. SECURITY INVOKER: the caller's RLS applies, so only
 -- ADMIN/ENGINEER can record assessments (policies from 0008); no privilege added.
+--
+-- Applied to production 2026-09-25 as version 20260925113456.
 
 create function public.record_quality_assessment(
   p_run_id uuid,
