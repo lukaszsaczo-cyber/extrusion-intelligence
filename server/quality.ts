@@ -4,10 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { getSessionContext } from "@/server/context";
-import { assess, type Category, type QSample, type SourceQuality, type TagInfo } from "@/lib/quality/rules";
-
-const PAGE = 1000; // PostgREST returns at most 1000 rows per request
-const MAX_SAMPLES = 500_000;
+import { assess, type QSample } from "@/lib/quality/rules";
+import { TooManySamples, loadRunSamples, loadTagMap } from "@/server/run-data";
 
 // Runs the step-6 rules over every sample of one run and records the result
 // (append-only; a re-check creates a new assessment). Returns to the quality page
@@ -28,31 +26,16 @@ export async function runQualityCheck(formData: FormData) {
     .eq("id", runId).eq("organization_id", orgId).maybeSingle();
   if (!run) redirect("/runs");
 
-  const [samplingRes, tagsRes, defsRes] = await Promise.all([
+  const [samplingRes, tagMap] = await Promise.all([
     supabase.from("run_sampling").select("sampling_interval_ms").eq("run_id", run.id).maybeSingle(),
-    supabase.from("machine_sensor_tags").select("tag, signal").eq("machine_id", run.machine_id).not("signal", "is", null),
-    supabase.from("signal_definitions").select("code, category").eq("organization_id", orgId),
+    loadTagMap(supabase, run.machine_id, orgId),
   ]);
-  const categoryOf = new Map((defsRes.data ?? []).map((d) => [d.code as string, d.category as Category]));
-  const tagMap = new Map<string, TagInfo>();
-  for (const t of tagsRes.data ?? []) {
-    const category = categoryOf.get(t.signal as string);
-    if (category) tagMap.set(t.tag as string, { code: t.signal as string, category });
-  }
 
-  const samples: QSample[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await supabase.from("run_metrics").select("id, signal, ts, value, quality")
-      .eq("run_id", run.id).order("id").range(from, from + PAGE - 1);
-    if (error) redirect(`${back}?e=failed`);
-    for (const m of data ?? []) {
-      samples.push({
-        id: m.id as string, signal: m.signal as string, tsMs: Date.parse(m.ts as string),
-        value: m.value === null ? null : Number(m.value), quality: m.quality as SourceQuality,
-      });
-    }
-    if (!data || data.length < PAGE) break;
-    if (samples.length > MAX_SAMPLES) redirect(`${back}?e=tooLarge`);
+  let samples: QSample[] = [];
+  try {
+    samples = await loadRunSamples(supabase, run.id);
+  } catch (e) {
+    redirect(`${back}?e=${e instanceof TooManySamples ? "tooLarge" : "failed"}`);
   }
   if (samples.length === 0) redirect(`${back}?e=empty`);
 

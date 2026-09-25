@@ -48,6 +48,7 @@ export default async function RunsPage({ searchParams }: { searchParams: Promise
               <span key="i" className="flex gap-3 whitespace-nowrap">
                 <Link href={`/runs/${r.id}/import`} className="text-teal hover:underline">{t("import.action")}</Link>
                 <Link href={`/runs/${r.id}/quality`} className="text-teal hover:underline">{t("quality.action")}</Link>
+                <Link href={`/runs/${r.id}/diagnosis`} className="text-teal hover:underline">{t("diagnosis.action")}</Link>
               </span>,
             ])}
           />
