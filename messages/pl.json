@@ -277,5 +277,54 @@
     "signal": "Sygnał",
     "unit": "Jednostka (opcjonalnie)",
     "unmapped": "niezmapowany"
+  },
+  "quality": {
+    "action": "Jakość danych",
+    "title": "Jakość danych (krok 6)",
+    "samples": "Próbki",
+    "intro": "Sprawdza, czy zaimportowanym próbkom można ufać, zanim powstanie jakakolwiek diagnoza. Próbki nigdy nie są zmieniane ani usuwane: wykluczone próbki trafiają do kwarantanny z powodem. Rzeczywiste odchylenia procesu nie trafiają do kwarantanny.",
+    "run": "Uruchom sprawdzenie",
+    "runButton": "Uruchom kontrolę jakości",
+    "uncalibrated": "Zestaw reguł v0-uncalibrated: progi są wartościami startowymi do czasu kalibracji na prawdziwych przebiegach. Każde sprawdzenie zostaje zapisane; nowe nie zastępuje poprzedniego.",
+    "readOnly": "Kontrolę jakości mogą uruchomić tylko Administrator i Inżynier.",
+    "latest": "Ostatni wynik",
+    "none": "Dla tego przebiegu nie uruchomiono jeszcze kontroli jakości.",
+    "verdictLabel": "Werdykt",
+    "ruleset": "Reguły",
+    "at": "Sprawdzono",
+    "signal": "Tag",
+    "reasons": "Powody",
+    "valid": "Poprawne próbki",
+    "quarantined": "W kwarantannie",
+    "byReason": "Kwarantanna według powodu",
+    "history": "Wcześniejsze sprawdzenia",
+    "verdict": {
+      "VALID": "Poprawne",
+      "QUARANTINED": "Poprawne po kwarantannie",
+      "INSUFFICIENT_DATA": "Niewystarczające dane"
+    },
+    "reason": {
+      "SOURCE_FLAGGED": "oznaczone przez źródło",
+      "PHYSICALLY_IMPOSSIBLE": "fizycznie niemożliwe",
+      "OUTSIDE_CONFIRMED_LIMITS": "poza potwierdzonymi limitami",
+      "SPIKE": "pik",
+      "FLATLINE": "zamrożona wartość",
+      "CROSS_SIGNAL_INCONSISTENT": "niespójne ze sprzężonymi sygnałami",
+      "TIMESTAMP_GAP": "przerwy w czasie",
+      "TIMESTAMP_NON_MONOTONIC": "czas nie rośnie",
+      "TIMESTAMP_DUPLICATE": "powtórzony czas",
+      "ISOLATED_DEVIATION": "izolowane odchylenie",
+      "MANUAL": "ręcznie",
+      "SAMPLING_METADATA_MISSING": "nieznany okres próbkowania",
+      "SIGNAL_NOT_MAPPED": "tag niezmapowany na sygnał",
+      "SIGNAL_NOT_AVAILABLE": "sygnał niedostępny",
+      "TOO_FEW_VALID_SAMPLES": "za mało poprawnych próbek"
+    },
+    "err": {
+      "forbidden": "Twoja rola nie pozwala uruchomić kontroli jakości.",
+      "failed": "Sprawdzenie nie powiodło się. Nic nie zostało zapisane.",
+      "empty": "Ten przebieg nie ma zaimportowanych próbek.",
+      "tooLarge": "Ten przebieg ma zbyt wiele próbek na jedno sprawdzenie."
+    }
   }
 }

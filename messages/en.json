@@ -277,5 +277,54 @@
     "signal": "Signal",
     "unit": "Unit (optional)",
     "unmapped": "not mapped"
+  },
+  "quality": {
+    "action": "Data quality",
+    "title": "Data quality (step 6)",
+    "samples": "Samples",
+    "intro": "Checks whether the imported samples can be trusted before any diagnosis. Samples are never changed or deleted: excluded samples are recorded in quarantine with a reason. Real process excursions are not quarantined.",
+    "run": "Run the check",
+    "runButton": "Run quality check",
+    "uncalibrated": "Ruleset v0-uncalibrated: thresholds are starting values until calibrated on real runs. Each check is kept; a new check does not replace the previous one.",
+    "readOnly": "Only Admin and Engineer can run the quality check.",
+    "latest": "Latest result",
+    "none": "No quality check has been run for this run yet.",
+    "verdictLabel": "Verdict",
+    "ruleset": "Rules",
+    "at": "Checked",
+    "signal": "Tag",
+    "reasons": "Reasons",
+    "valid": "Valid samples",
+    "quarantined": "Quarantined",
+    "byReason": "Quarantined by reason",
+    "history": "Earlier checks",
+    "verdict": {
+      "VALID": "Valid",
+      "QUARANTINED": "Valid after quarantine",
+      "INSUFFICIENT_DATA": "Insufficient data"
+    },
+    "reason": {
+      "SOURCE_FLAGGED": "flagged by source",
+      "PHYSICALLY_IMPOSSIBLE": "physically impossible",
+      "OUTSIDE_CONFIRMED_LIMITS": "outside confirmed limits",
+      "SPIKE": "spike",
+      "FLATLINE": "flatline",
+      "CROSS_SIGNAL_INCONSISTENT": "inconsistent with coupled signals",
+      "TIMESTAMP_GAP": "gaps in time",
+      "TIMESTAMP_NON_MONOTONIC": "time not increasing",
+      "TIMESTAMP_DUPLICATE": "duplicate timestamp",
+      "ISOLATED_DEVIATION": "isolated deviation",
+      "MANUAL": "manual",
+      "SAMPLING_METADATA_MISSING": "sampling interval unknown",
+      "SIGNAL_NOT_MAPPED": "tag not mapped to a signal",
+      "SIGNAL_NOT_AVAILABLE": "signal not available",
+      "TOO_FEW_VALID_SAMPLES": "too few valid samples"
+    },
+    "err": {
+      "forbidden": "Your role does not allow running the quality check.",
+      "failed": "The check failed. Nothing was saved.",
+      "empty": "This run has no imported samples.",
+      "tooLarge": "This run has too many samples for one check."
+    }
   }
 }

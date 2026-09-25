@@ -45,7 +45,10 @@ export default async function RunsPage({ searchParams }: { searchParams: Promise
             rows={runs.map((r) => [
               <span key="c" className="num">{r.run_code}</span>, machineName.get(r.machine_id) ?? na,
               t(`runStatus.${r.status}`), date(r.started_at), date(r.ended_at),
-              <Link key="i" href={`/runs/${r.id}/import`} className="text-teal hover:underline">{t("import.action")}</Link>,
+              <span key="i" className="flex gap-3 whitespace-nowrap">
+                <Link href={`/runs/${r.id}/import`} className="text-teal hover:underline">{t("import.action")}</Link>
+                <Link href={`/runs/${r.id}/quality`} className="text-teal hover:underline">{t("quality.action")}</Link>
+              </span>,
             ])}
           />
         )}
