@@ -10,6 +10,8 @@
 --
 -- run_metrics stays untouched: it keeps raw source signal names (evidence).
 -- machine_sensor_tags maps a raw tag to a canonical signal from the dictionary.
+--
+-- Applied to production 2026-09-25 as version 20260925105321.
 
 -- 1. Signal dictionary ------------------------------------------------------
 
