@@ -1,4 +1,5 @@
-// Runs the cross-org RLS test and its negative control against a database.
+// Runs the database tests against a database: cross-org RLS (with its negative
+// control) and the stage 5 approval flow.
 // Both SQL files roll back everything they create. Needs SUPABASE_DB_URL and
 // psql; without them the result is NOT RUN (exit 0, never reported as PASS).
 import { execFileSync } from "node:child_process";
@@ -28,4 +29,6 @@ if (control.verdict !== "DETECTS_LEAK") { console.error("negative control FAILED
 
 const result = run("supabase/tests/rls_cross_org.sql", "RLS_CROSS_ORG_RESULT");
 console.log("rls cross-org:", JSON.stringify(result));
-process.exit(result.verdict === "PASS" ? 0 : 1);
+const approval = run("supabase/tests/approval_flow.sql", "APPROVAL_FLOW_RESULT");
+console.log("approval flow:", JSON.stringify(approval));
+process.exit(result.verdict === "PASS" && approval.verdict === "PASS" ? 0 : 1);

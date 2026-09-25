@@ -117,14 +117,16 @@
   },
   "common": {
     "notAvailable": "Not available",
-    "plcNotice": "Planned value only. No machine command will be sent."
+    "plcNotice": "Planned value only. No machine command will be sent.",
+    "none": "— none —"
   },
   "errors": {
     "generic": "Request could not be completed.",
     "errorId": "Error ID",
     "invalid": "Check the entered values.",
     "forbidden": "Your role does not allow this change.",
-    "failed": "Could not save. Try again."
+    "failed": "Could not save. Try again.",
+    "duplicate": "This entry already exists (e.g. the same material in this recipe version)."
   },
   "form": {
     "add": "Add",
@@ -166,7 +168,23 @@
     "name": "Name",
     "productType": "Product type",
     "versions": "Versions",
-    "created": "Created"
+    "created": "Created",
+    "back": "All recipes",
+    "errSum": "Cannot finalize: components must sum to 100 %.",
+    "finalHint": "A FINAL version can no longer change. Only a FINAL version can be used in a process plan.",
+    "newVersion": "New version",
+    "noVersions": "No versions.",
+    "version": "Version",
+    "status": {
+      "DRAFT": "Draft",
+      "FINAL": "Final"
+    },
+    "material": "Material",
+    "percentWet": "Share [% wet mass]",
+    "sum": "Sum",
+    "noMaterials": "Add materials before adding components.",
+    "finalize": "Finalize version",
+    "noComponents": "No components."
   },
   "runs": {
     "title": "Runs",
@@ -474,5 +492,110 @@
     "dataFiles": "Run data",
     "noFiles": "No imported files",
     "importedAt": "imported"
+  },
+  "product": {
+    "title": "New product",
+    "toPlan": "Next: process plan",
+    "intro": "Wizard step 1: the product target and the values the product must reach. Next steps: recipe, machine, configuration, plan, preflight.",
+    "targets": "Product target",
+    "noTargets": "No product targets.",
+    "noValues": "No target values.",
+    "parameter": "Parameter",
+    "target": "Target",
+    "unit": "Unit",
+    "priority": "Priority",
+    "priorityValue": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High"
+    },
+    "addTarget": "Add product target",
+    "name": "Name",
+    "type": "Product type",
+    "shape": "Shape",
+    "addValue": "Add target value",
+    "valueHint": "Enter at least one of: min, target or max."
+  },
+  "preflight": {
+    "title": "Preflight",
+    "intro": "Wizard: product → recipe → machine → configuration → plan → preflight. Preflight checks the plan against known constraints; only the engine makes the decision.",
+    "plans": "Process plans",
+    "noPlans": "No plans.",
+    "machine": "Machine",
+    "recipe": "Recipe (version)",
+    "engineDecision": "Engine decision",
+    "approval": "Approval",
+    "approved": "Approved",
+    "notApproved": "Not approved",
+    "created": "Created",
+    "open": "Open",
+    "wizard": "New process plan",
+    "needMachine": "Add a machine before creating a plan.",
+    "needFinalRecipe": "A FINAL recipe version is required.",
+    "stepProduct": "Product",
+    "stepRecipe": "Recipe",
+    "stepMachine": "Machine",
+    "stepConfiguration": "Configuration",
+    "stepPlan": "Plan",
+    "productTarget": "Product target",
+    "screwConfiguration": "Screw configuration",
+    "die": "Die",
+    "cutter": "Cutter",
+    "feed": "Feed [kg/h]",
+    "rpm": "Screw speed [rpm]",
+    "water": "Water [kg/h]",
+    "steam": "Steam [kg/h]",
+    "cutterRpm": "Cutter speed [rpm]",
+    "zones": "Zone setpoints [°C], e.g. 80, 100, 120",
+    "create": "Create plan and go to preflight",
+    "planTitle": "Process plan: preflight",
+    "back": "All plans",
+    "inputs": "Plan inputs",
+    "field": "Field",
+    "valueCol": "Value",
+    "knownTitle": "Known-constraints check",
+    "knownOverall": "Result",
+    "knownHint": "The app's check against the machine's recorded constraints. It is not an engine decision and does not allow approval.",
+    "checkCol": "Check",
+    "statusCol": "Status",
+    "detailCol": "Details",
+    "check": {
+      "PASS": "PASS",
+      "FAIL": "FAIL",
+      "NEEDS_DATA": "NEEDS DATA"
+    },
+    "checkId": {
+      "RECIPE_FINAL": "Recipe FINAL",
+      "MACHINE_MAX_RPM": "Machine max speed",
+      "ZONE_COUNT": "Zone count",
+      "LIMIT": "Limit"
+    },
+    "reason": {
+      "RECIPE_NOT_FINAL": "recipe is not FINAL",
+      "PLAN_VALUE_MISSING": "value missing in plan",
+      "MACHINE_VALUE_UNKNOWN": "machine value unknown",
+      "UNIT_MISMATCH": "different unit – not converted",
+      "ABOVE_MAX": "above maximum",
+      "BELOW_MIN": "below minimum",
+      "ZONE_COUNT_MISMATCH": "setpoints ≠ zone count"
+    },
+    "limit": "limit",
+    "values": "values",
+    "notCheckable": "Limits checkable only during a run (not counted as PASS)",
+    "engineTitle": "Engine decision",
+    "engineDisconnected": "The private engine is not connected: no decision and no approval.",
+    "engineNotRun": "The engine is connected, but no decision has been recorded for this plan yet.",
+    "missingInputs": "Missing inputs",
+    "approvalTitle": "Approval",
+    "approveHint": "Approval records your account and the time. Any later change to the plan voids it.",
+    "approve": "Approve plan",
+    "approvalUnavailable": "Approval is possible only after an engine decision: Ready for operator review, Shadow test only or Test required.",
+    "err": {
+      "invalid": "Check the values you entered.",
+      "forbidden": "Your role does not allow this operation.",
+      "failed": "The operation failed.",
+      "notApprovable": "This decision does not allow approval.",
+      "already": "The plan is already approved."
+    }
   }
 }

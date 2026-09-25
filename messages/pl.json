@@ -117,14 +117,16 @@
   },
   "common": {
     "notAvailable": "Niedostępne",
-    "plcNotice": "Tylko wartość planowana. Aplikacja nie wysyła polecenia do maszyny."
+    "plcNotice": "Tylko wartość planowana. Aplikacja nie wysyła polecenia do maszyny.",
+    "none": "— brak —"
   },
   "errors": {
     "generic": "Nie udało się wykonać żądania.",
     "errorId": "ID błędu",
     "invalid": "Sprawdź wprowadzone wartości.",
     "forbidden": "Twoja rola nie pozwala na tę zmianę.",
-    "failed": "Nie udało się zapisać. Spróbuj ponownie."
+    "failed": "Nie udało się zapisać. Spróbuj ponownie.",
+    "duplicate": "Taki wpis już istnieje (np. ten sam surowiec w tej wersji receptury)."
   },
   "form": {
     "add": "Dodaj",
@@ -166,7 +168,23 @@
     "name": "Nazwa",
     "productType": "Typ produktu",
     "versions": "Wersje",
-    "created": "Utworzono"
+    "created": "Utworzono",
+    "back": "Wszystkie receptury",
+    "errSum": "Nie można sfinalizować: składniki muszą sumować się do 100 %.",
+    "finalHint": "Wersja FINAL nie może być już zmieniana. Do planu procesu można wybrać tylko wersję FINAL.",
+    "newVersion": "Nowa wersja",
+    "noVersions": "Brak wersji.",
+    "version": "Wersja",
+    "status": {
+      "DRAFT": "Szkic",
+      "FINAL": "Finalna"
+    },
+    "material": "Surowiec",
+    "percentWet": "Udział [% mokrej masy]",
+    "sum": "Suma",
+    "noMaterials": "Dodaj surowce, zanim dodasz składniki.",
+    "finalize": "Sfinalizuj wersję",
+    "noComponents": "Brak składników."
   },
   "runs": {
     "title": "Przebiegi",
@@ -474,5 +492,110 @@
     "dataFiles": "Dane przebiegu",
     "noFiles": "Brak zaimportowanych plików",
     "importedAt": "import"
+  },
+  "product": {
+    "title": "Nowy produkt",
+    "toPlan": "Dalej: plan procesu",
+    "intro": "Krok 1 kreatora: cel produktu i wartości, które produkt ma osiągnąć. Kolejne kroki: receptura, maszyna, konfiguracja, plan, preflight.",
+    "targets": "Cel produktu",
+    "noTargets": "Brak celów produktu.",
+    "noValues": "Brak wartości docelowych.",
+    "parameter": "Parametr",
+    "target": "Cel",
+    "unit": "Jednostka",
+    "priority": "Priorytet",
+    "priorityValue": {
+      "LOW": "Niski",
+      "MEDIUM": "Średni",
+      "HIGH": "Wysoki"
+    },
+    "addTarget": "Dodaj cel produktu",
+    "name": "Nazwa",
+    "type": "Typ produktu",
+    "shape": "Kształt",
+    "addValue": "Dodaj wartość docelową",
+    "valueHint": "Podaj co najmniej jedną z wartości: min, cel lub max."
+  },
+  "preflight": {
+    "title": "Preflight",
+    "intro": "Kreator: produkt → receptura → maszyna → konfiguracja → plan → preflight. Preflight sprawdza plan wobec znanych ograniczeń; decyzję podejmuje tylko silnik.",
+    "plans": "Plany procesu",
+    "noPlans": "Brak planów.",
+    "machine": "Maszyna",
+    "recipe": "Receptura (wersja)",
+    "engineDecision": "Decyzja silnika",
+    "approval": "Zatwierdzenie",
+    "approved": "Zatwierdzony",
+    "notApproved": "Niezatwierdzony",
+    "created": "Utworzono",
+    "open": "Otwórz",
+    "wizard": "Nowy plan procesu",
+    "needMachine": "Dodaj maszynę, zanim utworzysz plan.",
+    "needFinalRecipe": "Potrzebna jest receptura w wersji FINAL.",
+    "stepProduct": "Produkt",
+    "stepRecipe": "Receptura",
+    "stepMachine": "Maszyna",
+    "stepConfiguration": "Konfiguracja",
+    "stepPlan": "Plan",
+    "productTarget": "Cel produktu",
+    "screwConfiguration": "Konfiguracja ślimaka",
+    "die": "Dysza",
+    "cutter": "Nóż",
+    "feed": "Dozowanie [kg/h]",
+    "rpm": "Obroty ślimaka [rpm]",
+    "water": "Woda [kg/h]",
+    "steam": "Para [kg/h]",
+    "cutterRpm": "Obroty noża [rpm]",
+    "zones": "Nastawy stref [°C], np. 80, 100, 120",
+    "create": "Utwórz plan i przejdź do preflightu",
+    "planTitle": "Plan procesu: preflight",
+    "back": "Wszystkie plany",
+    "inputs": "Dane wejściowe planu",
+    "field": "Pole",
+    "valueCol": "Wartość",
+    "knownTitle": "Sprawdzenie znanych ograniczeń",
+    "knownOverall": "Wynik",
+    "knownHint": "To sprawdzenie aplikacji względem zapisanych ograniczeń maszyny. Nie jest decyzją silnika i nie pozwala zatwierdzić planu.",
+    "checkCol": "Sprawdzenie",
+    "statusCol": "Status",
+    "detailCol": "Szczegóły",
+    "check": {
+      "PASS": "PASS",
+      "FAIL": "FAIL",
+      "NEEDS_DATA": "NEEDS DATA"
+    },
+    "checkId": {
+      "RECIPE_FINAL": "Receptura FINAL",
+      "MACHINE_MAX_RPM": "Maks. obroty maszyny",
+      "ZONE_COUNT": "Liczba stref",
+      "LIMIT": "Ograniczenie"
+    },
+    "reason": {
+      "RECIPE_NOT_FINAL": "receptura nie jest FINAL",
+      "PLAN_VALUE_MISSING": "brak wartości w planie",
+      "MACHINE_VALUE_UNKNOWN": "wartość maszyny nieznana",
+      "UNIT_MISMATCH": "inna jednostka – bez przeliczania",
+      "ABOVE_MAX": "powyżej maksimum",
+      "BELOW_MIN": "poniżej minimum",
+      "ZONE_COUNT_MISMATCH": "liczba nastaw ≠ liczba stref"
+    },
+    "limit": "limit",
+    "values": "wartości",
+    "notCheckable": "Ograniczenia sprawdzalne dopiero w trakcie przebiegu (nie liczone jako PASS)",
+    "engineTitle": "Decyzja silnika",
+    "engineDisconnected": "Prywatny silnik nie jest połączony: brak decyzji i brak możliwości zatwierdzenia.",
+    "engineNotRun": "Silnik jest połączony, ale dla tego planu nie zapisano jeszcze decyzji.",
+    "missingInputs": "Brakujące dane",
+    "approvalTitle": "Zatwierdzenie",
+    "approveHint": "Zatwierdzenie zapisuje Twoje konto i czas. Każda późniejsza zmiana planu je unieważnia.",
+    "approve": "Zatwierdź plan",
+    "approvalUnavailable": "Zatwierdzenie jest możliwe tylko po decyzji silnika: Gotowe do przeglądu operatora, Tylko test w cieniu albo Wymagany test.",
+    "err": {
+      "invalid": "Sprawdź wprowadzone wartości.",
+      "forbidden": "Twoja rola nie pozwala na tę operację.",
+      "failed": "Operacja nie powiodła się.",
+      "notApprovable": "Ta decyzja nie pozwala na zatwierdzenie.",
+      "already": "Plan jest już zatwierdzony."
+    }
   }
 }

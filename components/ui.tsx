@@ -26,7 +26,7 @@ export function Notice({ text, tone = "muted" }: { text: string; tone?: "muted" 
   return <p className={`px-4 py-3 text-sm ${tone === "stop" ? "text-stop" : "text-muted"}`}>{text}</p>;
 }
 
-const FORM_ERRORS = ["invalid", "forbidden", "failed"] as const;
+const FORM_ERRORS = ["invalid", "forbidden", "failed", "duplicate"] as const;
 
 // Maps the ?e= code set by server actions to an i18n key, or null.
 export function formErrorKey(e: string | undefined): string | null {
@@ -67,13 +67,16 @@ export function Field({ label, name, type = "text", required, step, min, max, ma
   );
 }
 
-export function Select({ label, name, options, required }: {
-  label: string; name: string; options: { value: string; label: string }[]; required?: boolean;
+// `empty` adds a first option with value "" so an optional field is not
+// silently set to the first real option.
+export function Select({ label, name, options, required, empty }: {
+  label: string; name: string; options: { value: string; label: string }[]; required?: boolean; empty?: string;
 }) {
   return (
     <label className="block text-sm">
       <span className="mb-1 block text-muted">{label}</span>
-      <select name={name} required={required} className={input}>
+      <select name={name} required={required} className={input} defaultValue={empty !== undefined ? "" : undefined}>
+        {empty !== undefined && <option value="">{empty}</option>}
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </label>

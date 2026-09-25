@@ -57,7 +57,7 @@ async function insertForOrg(path: string, table: string, row: Record<string, unk
   if (!ctx?.current) redirect("/dashboard");
   const supabase = await createSupabaseServer();
   const { error } = await supabase.from(table).insert({ ...row, organization_id: ctx.current.organizationId });
-  if (error) redirect(`${path}?e=${error.code === "42501" ? "forbidden" : "failed"}`);
+  if (error) redirect(`${path}?e=${error.code === "42501" ? "forbidden" : error.code === "23505" ? "duplicate" : "failed"}`);
   revalidatePath(path);
   redirect(path);
 }
@@ -165,4 +165,117 @@ export async function renameOrganization(formData: FormData) {
   if (!data?.length) redirect("/settings?e=forbidden");
   revalidatePath("/", "layout");
   redirect("/settings");
+}
+
+// ---- Stage 5: recipes, product targets, process plans, approval ----
+
+const optNonNegative = z
+  .string().trim()
+  .transform((v) => (v === "" ? null : Number(v)))
+  .refine((v) => v === null || (Number.isFinite(v) && v >= 0))
+  .nullable().default(null);
+const optNumber = z
+  .string().trim()
+  .transform((v) => (v === "" ? null : Number(v)))
+  .refine((v) => v === null || Number.isFinite(v))
+  .nullable().default(null);
+
+// Next version number for a recipe; the unique (recipe_id, version) constraint
+// rejects a concurrent duplicate instead of silently reusing a number.
+export async function createRecipeVersion(formData: FormData) {
+  const p = uuid.safeParse(formData.get("recipe_id"));
+  if (!p.success) return insertForOrg("/recipes", "recipe_versions", null);
+  const supabase = await createSupabaseServer();
+  const { data } = await supabase.from("recipe_versions").select("version").eq("recipe_id", p.data)
+    .order("version", { ascending: false }).limit(1).maybeSingle();
+  await insertForOrg(`/recipes/${p.data}`, "recipe_versions", { recipe_id: p.data, version: ((data?.version as number | undefined) ?? 0) + 1 });
+}
+
+const ComponentInput = z.object({
+  recipe_id: uuid, recipe_version_id: uuid, material_id: uuid,
+  percent_wet: z.string().trim().min(1).transform(Number).refine((v) => Number.isFinite(v) && v > 0 && v <= 100),
+});
+
+export async function addRecipeComponent(formData: FormData) {
+  const p = ComponentInput.safeParse(fields(formData, Object.keys(ComponentInput.shape)));
+  if (!p.success) return insertForOrg("/recipes", "recipe_components", null);
+  const { recipe_id, ...row } = p.data;
+  await insertForOrg(`/recipes/${recipe_id}`, "recipe_components", row);
+}
+
+// FINAL is enforced by the database: components must sum to 100 % and a FINAL
+// version can no longer change.
+export async function finalizeRecipeVersion(formData: FormData) {
+  const p = z.object({ recipe_id: uuid, recipe_version_id: uuid }).safeParse(fields(formData, ["recipe_id", "recipe_version_id"]));
+  if (!p.success) redirect("/recipes?e=invalid");
+  const back = `/recipes/${p.data.recipe_id}`;
+  const supabase = await createSupabaseServer();
+  const { data, error } = await supabase.from("recipe_versions").update({ status: "FINAL" })
+    .eq("id", p.data.recipe_version_id).select("id");
+  if (error) redirect(`${back}?e=${error.message.includes("sum to 100") ? "sum" : error.code === "42501" ? "forbidden" : "failed"}`);
+  if (!data?.length) redirect(`${back}?e=forbidden`);
+  revalidatePath(back);
+  redirect(back);
+}
+
+const TargetInput = z.object({ name: text(), product_type: optText(), shape: optText() });
+
+export async function createProductTarget(formData: FormData) {
+  const p = TargetInput.safeParse(fields(formData, Object.keys(TargetInput.shape)));
+  await insertForOrg("/new-product", "product_targets", p.success ? p.data : null);
+}
+
+const TargetValueInput = z.object({
+  product_target_id: uuid, parameter: text(64), unit: optText(32),
+  min_value: optNumber, target_value: optNumber, max_value: optNumber,
+  priority: z.string().trim().transform((v) => (v === "" ? null : v))
+    .pipe(z.enum(["LOW", "MEDIUM", "HIGH"]).nullable()).nullable().default(null),
+}).refine((v) => v.min_value !== null || v.target_value !== null || v.max_value !== null);
+
+export async function addTargetValue(formData: FormData) {
+  const p = TargetValueInput.safeParse(fields(formData, ["product_target_id", "parameter", "unit", "min_value", "target_value", "max_value", "priority"]));
+  await insertForOrg("/new-product", "product_target_values", p.success ? p.data : null);
+}
+
+const zoneList = z.string().trim()
+  .transform((v) => (v === "" ? [] : v.split(/[;,\s]+/).filter(Boolean).map(Number)))
+  .refine((a) => a.length <= 64 && a.every((x) => Number.isFinite(x)));
+
+const PlanInput = z.object({
+  product_target_id: z.string().trim().transform((v) => (v === "" ? null : v)).pipe(uuid.nullable()),
+  recipe_version_id: uuid, machine_id: uuid,
+  screw_configuration: optText(500), die: optText(200), cutter: optText(200),
+  feed_kg_h: optNonNegative, screw_rpm: optNonNegative, water_kg_h: optNonNegative,
+  steam_kg_h: optNonNegative, cutter_rpm: optNonNegative, zone_setpoints_c: zoneList,
+});
+
+// Creates the plan only. Preflight and approval fields are server-only in the
+// database (plan_guard); the user's session cannot set them.
+export async function createProcessPlan(formData: FormData) {
+  const p = PlanInput.safeParse(fields(formData, Object.keys(PlanInput.shape)));
+  if (!p.success) redirect("/preflight?e=invalid");
+  const ctx = await getSessionContext();
+  if (!ctx?.current) redirect("/dashboard");
+  const supabase = await createSupabaseServer();
+  const { data, error } = await supabase.from("process_plans")
+    .insert({ ...p.data, organization_id: ctx.current.organizationId }).select("id").single();
+  if (error || !data) redirect(`/preflight?e=${error?.code === "42501" ? "forbidden" : "failed"}`);
+  revalidatePath("/preflight");
+  redirect(`/preflight/${data.id}`);
+}
+
+// Approval goes only through the database function, which re-checks role,
+// organization, an approvable engine decision and that it is not yet approved.
+export async function approvePlan(formData: FormData) {
+  const p = uuid.safeParse(formData.get("plan_id"));
+  if (!p.success) redirect("/preflight?e=invalid");
+  const back = `/preflight/${p.data}`;
+  const supabase = await createSupabaseServer();
+  const { error } = await supabase.rpc("approve_process_plan", { plan: p.data });
+  if (error) {
+    const m = error.message;
+    redirect(`${back}?e=${m.includes("forbidden") ? "forbidden" : m.includes("not available") ? "notApprovable" : m.includes("already") ? "already" : "failed"}`);
+  }
+  revalidatePath(back);
+  redirect(back);
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getT } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
@@ -33,7 +34,7 @@ export default async function RecipesPage({ searchParams }: { searchParams: Prom
           <DataTable
             head={[t("recipes.name"), t("recipes.productType"), t("recipes.versions"), t("recipes.created")]}
             rows={recipes.map((r) => [
-              r.name, r.product_type ?? na,
+              <Link key="n" href={`/recipes/${r.id}`} className="text-teal hover:underline">{r.name}</Link>, r.product_type ?? na,
               <span key="v" className="num">{r.recipe_versions[0]?.count ?? 0}</span>,
               <span key="c" className="num">{fmt.format(new Date(r.created_at))}</span>,
             ])}
