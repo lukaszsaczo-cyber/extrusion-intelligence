@@ -16,6 +16,8 @@
 --
 -- Only ADMIN/ENGINEER may record assessments: excluding samples changes what a
 -- diagnosis sees, so it must not be available to every role. Nothing is seeded.
+--
+-- Applied to production 2026-09-25 as version 20260925110007.
 
 create type public.quality_verdict as enum ('VALID', 'QUARANTINED', 'INSUFFICIENT_DATA');
 
