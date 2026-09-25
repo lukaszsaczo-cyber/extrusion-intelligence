@@ -6,7 +6,7 @@ const SECRET_VARS = ["SUPABASE_SERVICE_ROLE_KEY", "EXTRUSION_CORE_API_TOKEN", "E
 const root = ".next/static";
 if (!existsSync(root)) { console.error("bundle check FAILED: .next/static missing"); process.exit(1); }
 const files = [];
-const walk = (d) => { for (const f of readdirSync(d)) { const p = join(d, f); statSync(p).isDirectory() ? walk(p) : files.push(p); } };
+const walk = (d) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p); else files.push(p); } };
 walk(root);
 const checked = [];
 let leaks = 0;
