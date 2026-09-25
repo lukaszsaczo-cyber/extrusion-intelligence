@@ -15,8 +15,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const org = ctx.current;
 
   return (
-    <div className="min-h-screen md:grid md:grid-cols-[220px_1fr]">
-      <aside className="border-b border-line bg-panel px-3 py-4 md:min-h-screen md:border-r md:border-b-0">
+    <div className="min-h-screen md:grid md:grid-cols-[220px_1fr] print:block">
+      <aside className="print:hidden border-b border-line bg-panel px-3 py-4 md:min-h-screen md:border-r md:border-b-0">
         <div className="mb-4 px-3 text-sm font-semibold">{t("app.title")}</div>
         <details className="md:hidden">
           <summary className="cursor-pointer px-3 py-2 text-sm text-muted">Menu</summary>
@@ -25,7 +25,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="hidden md:block"><Sidebar labels={labels} /></div>
       </aside>
       <div className="min-w-0">
-        <header className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-line px-6 py-3 text-sm">
+        <header className="print:hidden flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-line px-6 py-3 text-sm">
           <span><span className="text-muted">{t("top.organization")}: </span>{org?.organizationName || t("common.notAvailable")}</span>
           <span><span className="text-muted">{t("top.role")}: </span>{org ? t(`role.${org.role}`) : t("common.notAvailable")}</span>
           <span className="flex items-center gap-2">

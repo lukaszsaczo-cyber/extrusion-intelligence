@@ -1,7 +1,8 @@
 // Runs the database tests against a database: cross-org RLS (with its negative
-// control), the stage 5 approval flow and the stage 6 verification guard.
-// Both SQL files roll back everything they create. Needs SUPABASE_DB_URL and
-// psql; without them the result is NOT RUN (exit 0, never reported as PASS).
+// control), the stage 5 approval flow, the stage 6 verification guard, and the
+// stage 7 audit seal and permission matrix. Every SQL file rolls back
+// everything it creates. Needs SUPABASE_DB_URL and psql; without them the
+// result is NOT RUN (exit 0, never reported as PASS).
 import { execFileSync } from "node:child_process";
 
 const url = process.env.SUPABASE_DB_URL;
@@ -33,4 +34,8 @@ const approval = run("supabase/tests/approval_flow.sql", "APPROVAL_FLOW_RESULT")
 console.log("approval flow:", JSON.stringify(approval));
 const verification = run("supabase/tests/verification_guard.sql", "VERIFICATION_GUARD_RESULT");
 console.log("verification guard:", JSON.stringify(verification));
-process.exit([result, approval, verification].every((r) => r.verdict === "PASS") ? 0 : 1);
+const audit = run("supabase/tests/audit_seal.sql", "AUDIT_SEAL_RESULT");
+console.log("audit seal:", JSON.stringify(audit));
+const matrix = run("supabase/tests/permissions_matrix.sql", "PERMISSIONS_MATRIX_RESULT");
+console.log("permissions matrix:", JSON.stringify(matrix));
+process.exit([result, approval, verification, audit, matrix].every((r) => r.verdict === "PASS") ? 0 : 1);

@@ -4,7 +4,7 @@ import { getT } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
 import { compareWithContract, METRIC_UNITS } from "@/server/engine";
 import { createSupabaseServer } from "@/lib/supabase/server";
-import { addMeasurement, createProductSample } from "@/server/actions";
+import { addMeasurement, createProductSample, sealRunAudit } from "@/server/actions";
 import type { Snapshot } from "@/lib/diagnosis/snapshot";
 import { predictedVsActual, productCheck, type Measurement, type Prediction, type TargetValue } from "@/lib/verification/checks";
 import { DataTable, Empty, Field, FormGrid, Notice, PageHeader, Panel, Select, formErrorKey } from "@/components/ui";
@@ -33,7 +33,7 @@ export default async function RunDetail({ params, searchParams }: {
   if (!runData) notFound();
   const run = runData as Run;
 
-  const [metricsCountRes, filesRes, qaRes, snapRes, samplesRes, verRes, planRes] = await Promise.all([
+  const [metricsCountRes, filesRes, qaRes, snapRes, samplesRes, verRes, planRes, auditRes] = await Promise.all([
     supabase.from("run_metrics").select("id", { count: "exact", head: true }).eq("run_id", id),
     supabase.from("run_files").select("filename, created_at, row_count, column_count").eq("run_id", id).order("created_at"),
     supabase.from("quality_assessments").select("verdict, ruleset_version, created_at").eq("run_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
@@ -43,7 +43,9 @@ export default async function RunDetail({ params, searchParams }: {
     run.process_plan_id
       ? supabase.from("process_plans").select("id, product_target_id, feed_kg_h, screw_rpm, water_kg_h, steam_kg_h, cutter_rpm, zone_setpoints_c, preflight_status, approved_at").eq("id", run.process_plan_id).maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase.from("audit_records").select("id, created_at, final_hash").eq("run_id", id).order("created_at", { ascending: false }),
   ]);
+  const audits = (auditRes.data ?? []) as { id: string; created_at: string; final_hash: string }[];
   const samples = (samplesRes.data ?? []) as Sample[];
   const measRes = samples.length
     ? await supabase.from("product_measurements").select("id, product_sample_id, parameter, value, unit, method, created_at")
@@ -68,6 +70,7 @@ export default async function RunDetail({ params, searchParams }: {
   const product = productCheck(targets, measurements as Measurement[]);
 
   const canMeasure = ["ADMIN", "ENGINEER", "OPERATOR"].includes(ctx.current.role);
+  const canSeal = ["ADMIN", "ENGINEER"].includes(ctx.current.role);
   const na = t("common.notAvailable");
   const fmt = new Intl.DateTimeFormat(locale === "pl" ? "pl-PL" : "en-GB", { dateStyle: "short", timeStyle: "short" });
   const date = (x: string | null) => <span className="num">{x ? fmt.format(new Date(x)) : na}</span>;
@@ -176,6 +179,21 @@ export default async function RunDetail({ params, searchParams }: {
             rows={verifications.map((v) => [t(`dashboard.verificationKind.${v.kind}`),
               <span key="s" className={stateTone(v.state)}>{t(`dashboard.verificationState.${v.state}`)}</span>,
               v.evidence_saved ? t("runDetail.evidenceSaved") : t("runDetail.evidenceNotSaved"), date(v.verified_at)])} />
+        )}
+      </Panel>
+
+      <Panel title={t("audit.title")}>
+        <Notice text={t("audit.sealHint")} />
+        {audits.length === 0 ? <Empty text={t("audit.noRecords")} /> : (
+          <DataTable head={[t("audit.sealedAt"), t("audit.hash"), ""]}
+            rows={audits.map((a) => [date(a.created_at), <span key="h" className="num">{a.final_hash.slice(0, 12)}…</span>,
+              <Link key="o" href={`/audit/${a.id}`} className="underline decoration-line underline-offset-4">{t("audit.open")}</Link>])} />
+        )}
+        {canSeal && (
+          <form action={sealRunAudit} className="border-t border-line px-4 py-3">
+            <input type="hidden" name="run_id" value={id} />
+            <button className="rounded bg-teal px-3 py-2 text-sm font-medium text-ground">{t("audit.seal")}</button>
+          </form>
         )}
       </Panel>
     </div>

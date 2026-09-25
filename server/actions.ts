@@ -309,3 +309,18 @@ export async function addMeasurement(formData: FormData) {
   const { run_id, ...row } = p.data;
   await insertForOrg(`/runs/${run_id}`, "product_measurements", row);
 }
+
+// ---- Stage 7: audit seal ----
+
+// The database builds the snapshot and its hash (seal_run_audit, 0013) and
+// re-checks the role; the app only names the run.
+export async function sealRunAudit(formData: FormData) {
+  const p = uuid.safeParse(formData.get("run_id"));
+  if (!p.success) redirect("/audit?e=invalid");
+  const back = `/runs/${p.data}`;
+  const supabase = await createSupabaseServer();
+  const { data, error } = await supabase.rpc("seal_run_audit", { p_run_id: p.data });
+  if (error || typeof data !== "string") redirect(`${back}?e=${error?.code === "42501" ? "forbidden" : "failed"}`);
+  revalidatePath("/audit");
+  redirect(`/audit/${data}`);
+}

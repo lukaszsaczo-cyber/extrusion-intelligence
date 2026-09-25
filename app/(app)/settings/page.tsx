@@ -3,6 +3,11 @@ import { getT } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { createSite, renameOrganization } from "@/server/actions";
+import { getEngineHealth } from "@/server/engine";
+import { peopleNames } from "@/server/people";
+import { ACTIONS, PERMISSIONS, ROLES } from "@/lib/settings/permissions";
+import { RULESET_V0 } from "@/lib/quality/rules";
+import { GATES_VERSION, MIN_CLEAN_SAMPLES } from "@/lib/diagnosis/gates";
 import { DataTable, Empty, Field, FormGrid, Notice, PageHeader, Panel, formErrorKey } from "@/components/ui";
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ e?: string }> }) {
@@ -14,13 +19,15 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const errorKey = formErrorKey((await searchParams).e);
 
   const supabase = await createSupabaseServer();
-  const [sitesRes, membersRes] = await Promise.all([
+  const [sitesRes, membersRes, engine] = await Promise.all([
     supabase.from("sites").select("id, name, timezone").eq("organization_id", org.organizationId).order("name"),
     supabase.from("organization_members").select("user_id, role").eq("organization_id", org.organizationId),
+    getEngineHealth(),
   ]);
   const sites = (sitesRes.data ?? []) as { id: string; name: string; timezone: string | null }[];
   const members = (membersRes.data ?? []) as { user_id: string; role: string }[];
   const na = t("common.notAvailable");
+  const name = await peopleNames(supabase, members.map((m) => m.user_id));
 
   return (
     <div className="space-y-6">
@@ -58,10 +65,32 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <DataTable head={[t("settings.user"), t("settings.role")]}
           rows={members.map((m) => [
             <span key="u" className="num">
-              {m.user_id === ctx.userId ? `${ctx.email ?? m.user_id.slice(0, 8)} (${t("settings.you")})` : m.user_id.slice(0, 8)}
+              {m.user_id === ctx.userId ? `${ctx.email ?? name(m.user_id)} (${t("settings.you")})` : name(m.user_id)}
             </span>,
             t(`role.${m.role}`),
           ])} />
+      </Panel>
+
+      <Panel title={t("settings.permissions")}>
+        <Notice text={t("settings.permissionsHint")} />
+        <DataTable head={[t("settings.action"), ...ROLES.map((r) => t(`role.${r}`))]}
+          rows={ACTIONS.map((a) => [
+            t(`settings.perm.${a}`),
+            ...ROLES.map((r) => (PERMISSIONS[a] as readonly string[]).includes(r)
+              ? <span key={r} className="text-teal">✓</span> : <span key={r} className="text-muted">—</span>),
+          ])} />
+      </Panel>
+
+      <Panel title={t("settings.configuration")}>
+        <DataTable head={[t("preflight.field"), t("preflight.valueCol")]} rows={[
+          [t("settings.engine"), engine.connected ? t("engine.connected") : t("engine.notConnected")],
+          [t("settings.ruleset"), <span key="r" className="num">{RULESET_V0.version}</span>],
+          [t("settings.rulesetParams"), <span key="p" className="num">
+            {`minValidSamples=${RULESET_V0.minValidSamples}, gapFactor=${RULESET_V0.gapFactor}, minCoverage=${RULESET_V0.minCoverage}`}</span>],
+          [t("settings.gates"), <span key="g" className="num">{`${GATES_VERSION}, MIN_CLEAN_SAMPLES=${MIN_CLEAN_SAMPLES}`}</span>],
+          [t("settings.auditFormat"), <span key="a" className="num">audit-v1 · SHA-256</span>],
+        ]} />
+        <Notice text={t("settings.configurationHint")} />
       </Panel>
     </div>
   );
