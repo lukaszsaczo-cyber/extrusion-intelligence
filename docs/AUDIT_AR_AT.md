@@ -25,9 +25,16 @@ unit tests and database tests.
 
 | Verdict | Count | AR |
 |---|---|---|
-| PASS | 14 | 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 14, 17, 19 |
-| PARTIAL | 5 | 7, 13, 15, 16, 20 |
+| PASS | 15 | 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 14, 15, 17, 19 |
+| PARTIAL | 4 | 7, 13, 16, 20 |
 | FAIL | 1 | 18 |
+
+**Update 2026-09-26 (fix 3).** AR-15 is PASS.
+- The JSON export now carries the contract's own audit export
+  (`contract_export`: `AUDIT_FIELDS` and `finalAuditHash`).
+- Seals are `audit-v2` (0017): they add organization, site, machine with its
+  configuration, and recipe version.
+- The run's operator is now recorded: the user who starts it.
 
 **Update 2026-09-26 (fix 2).** Migrations 0015 and 0016 and the engine
 actions give the engine's decision and verification a write path.
@@ -69,7 +76,7 @@ Fixes are listed at the end.
 | 12 | Predicted vs actual | PASS (logic) | <ul><li>Uses the contract's own `compare` on the clean median, with no unit conversion (tests 51–53).</li><li>Real data is blocked by AR-7: there are no predictions, so the panel shows NOT AVAILABLE, as intended.</li></ul> |
 | 13 | Verification: PASS / FAIL / INCONCLUSIVE / INCOMPLETE; missing data is never success | PARTIAL | <ul><li>What holds:<ul><li>states follow the contract;</li><li>the product check never gives PASS on missing data (tests 54–57);</li><li>users, even ADMIN, cannot insert verifications directly.</li></ul></li><li>Fix 2: `requestEngineVerification` calls `adapter.verifyRun()` for a COMPLETED run. `record_engine_verification` stores the state as kind `ENGINE`, because the contract's verification has no kind. Evidence counts only for VERIFIED_PASS with a strict `true` (DB test).</li><li>Open: **NOT RUN** against a live engine. The contract's `observed` values are not stored; there is no table for them yet.</li></ul> |
 | 14 | History: runs, decisions, predictions, verifications, events; the chain DECISION → … → VERIFICATION | PASS | <ul><li>`lib/history/timeline.ts`, 3 tests.</li><li>A step without a record is NOT_AVAILABLE.</li></ul> |
-| 15 | Audit: events, decisions, verifications, user, time, integrity; print; JSON export; allowlist | **PARTIAL** | <ul><li>What holds:<ul><li>seal, SHA-256 hash chain, integrity check and print;</li><li>DB audit_seal PASS 16/16, which detects an edited, a re-hashed and a removed record;</li><li>the export allowlist (5 tests).</li></ul></li><li>Deviation: the contract defines its own audit export (`buildAuditExport`, `AUDIT_FIELDS`, `finalAuditHash`). The app built a separate format (`ei-audit-export-v1`) instead of using it.</li><li>The snapshot lacks several contract fields: site, serial number, machine configuration snapshot, recipe version, operator, final status.</li></ul> |
+| 15 | Audit: events, decisions, verifications, user, time, integrity; print; JSON export; allowlist | PASS (fixed 2026-09-26) | <ul><li>Seal, SHA-256 hash chain, integrity check and print. DB audit_seal PASS 16/16, now with audit-v2 content checks; it detects an edited, a re-hashed and a removed record.</li><li>Export allowlist: 5 tests; its keys equal what 0017 builds.</li><li>Fix 3 adds `contract_export` to the JSON export. It is the contract's `buildAuditExport` over the allowlisted snapshot: all `AUDIT_FIELDS` plus `finalAuditHash`, reproducible. `lib/audit/contract-record.ts`, 3 tests using the real contract.</li><li>Operator = the user who started the run. It is set by the database (0017) and fixed after the start (run_plan_guard 23/23).</li><li>Mapping kept strict:<ul><li>audit-v1 fields that do not exist are null;</li><li>several files are exported as lists;</li><li>the engine's whole-run verification (kind ENGINE) is **not** mapped to process, product or final, because the contract does not say which one it is. This needs confirmation from the engine side.</li></ul></li></ul> |
 | 16 | Settings: organization, users, configuration, permissions, app settings | **PARTIAL** | <ul><li>Present:<ul><li>organization and sites;</li><li>the member list with names;</li><li>configuration;</li><li>the permission matrix, whose 12 × 4 cells match the database (DB test PASS).</li></ul></li><li>Missing: inviting users and changing roles (needs Auth admin). App settings are only the language.</li></ul> |
 | 17 | Security: RLS per company with cross-org tests; server-only; ESLint `no-restricted-imports` | PASS | <ul><li>Cross-org RLS PASS: 28 tables, 146 checks; the negative control DETECTS_LEAK.</li><li>ESLint boundary rule: 7 tests.</li><li>`import "server-only"` in `server/engine.ts`, `lib/supabase/server.ts` and `server/people.ts`.</li><li>TRUNCATE was revoked from client roles in 0013.</li><li>Open: Supabase advisor warns that leaked-password protection is off. This is a dashboard setting.</li></ul> |
 | 18 | Protected term guard: TERM_GUARD_KEY + HMAC digests; checks build output, client chunks, messages, API responses; without secrets NOT RUN | **FAIL** | <ul><li>The runtime guard exists in the adapter: it fails closed and drops free text.</li><li>The real-term test is NOT RUN (no key, terms or digests).</li><li>**No scan of build output, client chunks, messages or API responses for protected terms exists.** The build scan (`check-bundle`, canary) looks only for secret values.</li></ul> |
@@ -101,6 +108,7 @@ transaction. Afterwards there were 1 organization, 0 test users and 0 runs.
 | Probe: DECISION → APPROVAL → RUN (rolled back) | production DB | FAIL on 2026-09-25 (see AR-8, AR-9); fixed by 0014 |
 | `run_plan_guard.sql` (2026-09-26, after 0014) | production DB | PASS 20/20 |
 | `engine_results.sql` (2026-09-26, after 0015 and 0016) | production DB | PASS 25/25. The first run was FAIL 2/22, which showed the fail-open bug; fixed in 0016 |
+| After 0017: `audit_seal` (audit-v2) 16/16, `run_plan_guard` (with operator) 23/23, `permissions_matrix` 12 × 4 | production DB | all PASS |
 | Secret canary incl. `ENGINE_WRITE_KEY` | local | PASS, 6 canaries, 0 files |
 | Re-run after 0014: `rls_cross_org` 146, `approval_flow` 11/11, `verification_guard` 5/5, `audit_seal` 16/16, `permissions_matrix` 12 × 4 | production DB | all PASS |
 | Route smoke without a session (`next start`) | local | PASS: all app routes 307 → /login, `/api/health` 200 |
@@ -124,7 +132,8 @@ transaction. Afterwards there were 1 organization, 0 test users and 0 runs.
    `SUPABASE_SERVICE_ROLE_KEY` as a secret, or a narrow SECURITY DEFINER RPC
    that accepts only contract-shaped input (to be decided). Real results need
    the engine URL and token.
-3. **AR-15: audit export via the contract.** Add the contract's
+3. ~~**AR-15: audit export via the contract.**~~ Done 2026-09-26 (0017,
+   `contract_export`). Original note: Add the contract's
    `buildAuditExport` output (its `AUDIT_FIELDS` and `finalAuditHash`) to the
    export, and extend the snapshot with site, serial number, machine
    configuration, recipe version and operator.

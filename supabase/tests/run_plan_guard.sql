@@ -1,4 +1,4 @@
--- DECISION -> APPROVAL -> RUN guard (migration 0014). Each check tries one
+-- DECISION -> APPROVAL -> RUN guard (migration 0014; operator from 0017). Each check tries one
 -- action as an app user (OPERATOR or ENGINEER) and records whether the
 -- database accepted it; the expectation is next to it.
 -- Always ends in RAISE, so nothing persists. Result: 'RUN_PLAN_GUARD_RESULT {json}'.
@@ -34,6 +34,13 @@ begin
   begin
     insert into public.runs (organization_id, machine_id, process_plan_id, run_code, status, started_at) values (org, m1, p_ok, 'X0', 'RUNNING', now());
     failures := failures || '{"check":"insert as RUNNING refused","detail":"accepted"}';
+  exception when others then null; end;
+
+  -- 1b. a new run cannot carry an operator (0017)
+  checks := checks + 1;
+  begin
+    insert into public.runs (organization_id, machine_id, run_code, operator_id) values (org, m1, 'X9', u_eng);
+    failures := failures || '{"check":"insert with operator refused","detail":"accepted"}';
   exception when others then null; end;
 
   insert into public.runs (organization_id, machine_id, run_code) values (org, m1, 'R1') returning id into r;
@@ -82,6 +89,19 @@ begin
     update public.runs set status = 'RUNNING', started_at = now() - interval '1 hour' where id = r;
   exception when others then
     failures := failures || jsonb_build_object('check', 'start on approved plan accepted', 'msg', sqlerrm);
+  end;
+
+  -- 6b. the operator is the user who started the run (0017), and it is fixed
+  checks := checks + 1;
+  if (select operator_id from public.runs where id = r) is distinct from u_op then
+    failures := failures || '{"check":"operator = user who started","detail":"other value"}';
+  end if;
+  checks := checks + 1;
+  begin
+    update public.runs set operator_id = u_eng where id = r;
+    failures := failures || '{"check":"operator fixed after start","detail":"accepted"}';
+  exception when others then
+    if sqlerrm not like 'run_locked%' then failures := failures || jsonb_build_object('check', 'operator fixed after start', 'msg', sqlerrm); end if;
   end;
 
   -- 7. once started, the plan link is fixed

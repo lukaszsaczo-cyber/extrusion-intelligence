@@ -1,5 +1,6 @@
 // JSON export of one audit record. Only allowlisted fields leave the app: the
-// allowlist mirrors the audit-v1 snapshot built by seal_run_audit (0013). Any
+// allowlist mirrors the audit-v2 snapshot built by seal_run_audit (0017; audit-v1
+// from 0013 is a subset). Any
 // field not listed (for example one added later, or a private engine field) is
 // dropped, never passed through. Objects and arrays are exported only where the
 // allowlist describes their shape, so a whole subtree can never slip out under
@@ -11,6 +12,17 @@ const WHO_WHEN = { created_at: true, created_by: true } as const;
 
 export const AUDIT_SNAPSHOT_ALLOWLIST = {
   schema: true, seq: true, previous_hash: true, sealed_at: true, sealed_by: true,
+  // audit-v2 (0017)
+  organization: { id: true, name: true },
+  site: { id: true, name: true },
+  machine: {
+    id: true, manufacturer: true, model: true, variant: true, serial_number: true,
+    configuration: {
+      screw_diameter_mm: true, l_d: true, drive_power_kw: true, configured_max_rpm: true,
+      configured_max_pressure_bar: true, zone_count: true, controller_version: true, software_version: true,
+    },
+  },
+  recipe_version: { id: true, recipe: true, version: true, status: true },
   run: {
     id: true, run_code: true, status: true, machine_id: true, process_plan_id: true, operator_id: true,
     started_at: true, ended_at: true, ...WHO_WHEN,
@@ -72,7 +84,7 @@ export type Integrity = { seq: number | null; hash_ok: boolean; chain_ok: boolea
 
 export const EXPORT_FORMAT = "ei-audit-export-v1";
 
-export function buildAuditExport(record: AuditRecordRow, integrity: Integrity, exportedAt: string) {
+export function buildAuditExport(record: AuditRecordRow, integrity: Integrity, exportedAt: string, contractExport: unknown = null) {
   const snap = applyAllowlist(record.snapshot, AUDIT_SNAPSHOT_ALLOWLIST);
   return {
     format: EXPORT_FORMAT,
@@ -83,6 +95,9 @@ export function buildAuditExport(record: AuditRecordRow, integrity: Integrity, e
     // final_hash covers the stored snapshot. Fields outside the allowlist are
     // never exported; only their count is reported.
     dropped_field_count: snap.dropped,
+    // The engine contract's own audit export (buildAuditExport: AUDIT_FIELDS +
+    // finalAuditHash), built from the allowlisted snapshot. null = not available.
+    contract_export: contractExport,
     snapshot: snap.value ?? null,
   };
 }

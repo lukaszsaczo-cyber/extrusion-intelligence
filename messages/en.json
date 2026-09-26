@@ -806,6 +806,13 @@
       "HASH_MISMATCH": "Hash mismatch: record changed",
       "CHAIN_BROKEN": "Chain broken: a record is missing or changed",
       "NOT_AVAILABLE": "Not checked"
-    }
+    },
+    "schema": "Snapshot format",
+    "contractHash": "Contract audit hash (finalAuditHash)",
+    "operator": "Operator (started the run)",
+    "organizationSite": "Organization · site",
+    "machine": "Machine",
+    "serial": "serial no.",
+    "recipeVersion": "Recipe version"
   }
 }

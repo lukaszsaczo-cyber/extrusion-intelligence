@@ -806,6 +806,13 @@
       "HASH_MISMATCH": "Niezgodny hash: rekord zmieniony",
       "CHAIN_BROKEN": "Przerwany łańcuch: brak lub zmiana rekordu",
       "NOT_AVAILABLE": "Nie sprawdzono"
-    }
+    },
+    "schema": "Format migawki",
+    "contractHash": "Hash audytu kontraktu (finalAuditHash)",
+    "operator": "Operator (rozpoczął przebieg)",
+    "organizationSite": "Organizacja · zakład",
+    "machine": "Maszyna",
+    "serial": "nr seryjny",
+    "recipeVersion": "Wersja receptury"
   }
 }

@@ -5,14 +5,19 @@ import { getSessionContext } from "@/server/context";
 import { peopleNames } from "@/server/people";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { AUDIT_SNAPSHOT_ALLOWLIST, applyAllowlist } from "@/lib/audit/export";
+import { toContractAuditArgs } from "@/lib/audit/contract-record";
+import { contractAuditExport } from "@/server/engine";
 import { DataTable, Empty, Notice, PageHeader, Panel } from "@/components/ui";
 import { PrintButton } from "@/components/print-button";
 import { integrityState, type IntegrityRow } from "../integrity";
 
 type Stamp = { created_at: string; created_by: string | null };
 type Snap = {
+  schema: string; organization?: { name: string } | null; site?: { name: string } | null;
+  machine?: { manufacturer: string | null; model: string | null; serial_number: string | null } | null;
+  recipe_version?: { recipe: string; version: number; status: string } | null;
   seq: number; previous_hash: string | null; sealed_at: string; sealed_by: string | null;
-  run: { run_code: string; status: string; started_at: string | null; ended_at: string | null } & Stamp | null;
+  run: { run_code: string; status: string; started_at: string | null; ended_at: string | null; operator_id: string | null } & Stamp | null;
   plan: null | ({
     version: number; screw_rpm: number | null; feed_kg_h: number | null; water_kg_h: number | null; steam_kg_h: number | null;
     cutter_rpm: number | null; zone_setpoints_c: number[] | null;
@@ -43,8 +48,9 @@ export default async function AuditRecordPage({ params }: { params: Promise<{ id
   const state = integrityState(((integ ?? []) as IntegrityRow[])[0]);
   // Show exactly what the export would contain: the allowlisted snapshot.
   const s = applyAllowlist(data.snapshot, AUDIT_SNAPSHOT_ALLOWLIST).value as Snap;
+  const contract = contractAuditExport(toContractAuditArgs(data.id, s));
 
-  const users = [s.sealed_by, s.run?.created_by, s.plan?.created_by, s.plan?.approval.approved_by,
+  const users = [s.sealed_by, s.run?.created_by, s.run?.operator_id, s.plan?.created_by, s.plan?.approval.approved_by,
     ...s.files.map((x) => x.created_by), ...s.measurements.map((x) => x.created_by),
     ...s.quality.map((x) => x.created_by), ...s.diagnoses.map((x) => x.created_by)];
   const name = await peopleNames(supabase, users);
@@ -71,6 +77,8 @@ export default async function AuditRecordPage({ params }: { params: Promise<{ id
           [t("audit.previousHash"), <span key="p" className="num break-all">{s.previous_hash ?? t("audit.first")}</span>],
           [t("audit.sealedAt"), when(s.sealed_at)],
           [t("audit.sealedBy"), who(s.sealed_by)],
+          [t("audit.schema"), <span key="v" className="num">{s.schema}</span>],
+          [t("audit.contractHash"), <span key="c" className="num break-all">{String(contract.finalAuditHash)}</span>],
         ]} />
         <Notice text={t("audit.integrityHint")} />
       </Panel>
@@ -81,6 +89,10 @@ export default async function AuditRecordPage({ params }: { params: Promise<{ id
             [t("runs.code"), s.run.run_code], [t("runs.status"), t(`runStatus.${s.run.status}`)],
             [t("runs.start"), when(s.run.started_at)], [t("runs.end"), when(s.run.ended_at)],
             [t("audit.createdBy"), who(s.run.created_by)],
+            [t("audit.operator"), who(s.run.operator_id)],
+            [t("audit.organizationSite"), s.organization ? `${s.organization.name} · ${s.site?.name ?? na}` : na],
+            [t("audit.machine"), s.machine ? `${[s.machine.manufacturer, s.machine.model].filter(Boolean).join(" ") || na} · ${t("audit.serial")} ${s.machine.serial_number ?? na}` : na],
+            [t("audit.recipeVersion"), s.recipe_version ? `${s.recipe_version.recipe} v${s.recipe_version.version} (${t(`recipes.status.${s.recipe_version.status}`)})` : na],
           ]} />
         )}
       </Panel>

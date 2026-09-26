@@ -1,5 +1,5 @@
 -- Stage 7 database guarantees for the audit (migration 0013): only ADMIN and
--- ENGINEER seal, the snapshot is built by the database, the chain links every
+-- ENGINEER seal, the snapshot (audit-v2, 0017) is built by the database, the chain links every
 -- record to the one before, integrity detects an edited record and an edit
 -- re-hashed to hide itself, nobody else's organization is visible, records
 -- cannot be changed and client roles cannot TRUNCATE.
@@ -9,8 +9,8 @@ declare
   u_eng uuid := gen_random_uuid(); u_op uuid := gen_random_uuid(); u_view uuid := gen_random_uuid(); u_other uuid := gen_random_uuid();
   org uuid; org2 uuid; site uuid; machine uuid; recipe uuid; rv uuid; plan uuid; run uuid;
   a1 uuid; a2 uuid; a3 uuid; r record; snap jsonb; n bigint; checks int := 0;
-  expected_keys text[] := array['diagnoses','files','measurements','plan','predictions','previous_hash','quality',
-                                'run','schema','sealed_at','sealed_by','seq','state_snapshots','verifications'];
+  expected_keys text[] := array['diagnoses','files','machine','measurements','organization','plan','predictions','previous_hash','quality',
+                                'recipe_version','run','schema','sealed_at','sealed_by','seq','site','state_snapshots','verifications'];
   failures jsonb := '[]'::jsonb;
 begin
   insert into auth.users (id, aud, role, email) values
@@ -71,11 +71,14 @@ begin
   select snapshot into snap from public.audit_records where id = a1;
   checks := checks + 1;
   if (select array_agg(k order by k) from jsonb_object_keys(snap) k) <> expected_keys then
-    failures := failures || jsonb_build_object('check', 'snapshot has exactly the audit-v1 keys', 'keys', (select jsonb_agg(k) from jsonb_object_keys(snap) k));
+    failures := failures || jsonb_build_object('check', 'snapshot has exactly the audit-v2 keys', 'keys', (select jsonb_agg(k) from jsonb_object_keys(snap) k));
   end if;
   checks := checks + 1;
   if not (snap ->> 'seq' = '1' and snap -> 'previous_hash' = 'null'::jsonb and snap ->> 'sealed_by' = u_eng::text
-          and snap #>> '{run,run_code}' = 'A-1' and snap #>> '{plan,screw_rpm}' = '300') then
+          and snap #>> '{run,run_code}' = 'A-1' and snap #>> '{plan,screw_rpm}' = '300'
+          and snap ->> 'schema' = 'audit-v2' and snap #>> '{organization,name}' = 'Audit test' and snap #>> '{site,name}' = 's'
+          and snap #>> '{machine,id}' = machine::text and snap #>> '{recipe_version,recipe}' = 'r'
+          and snap #>> '{recipe_version,version}' = '1') then
     failures := failures || jsonb_build_object('check', 'first record content', 'snapshot', snap);
   end if;
   checks := checks + 1;
