@@ -6,6 +6,7 @@ import { join } from "node:path";
 // Server-only secrets that must never reach browser assets.
 export const SECRET_VARS = [
   "SUPABASE_SERVICE_ROLE_KEY", "EXTRUSION_CORE_API_TOKEN", "EXTRUSION_CORE_API_URL", "TERM_GUARD_KEY", "SUPABASE_DB_URL",
+  "ENGINE_WRITE_KEY",
 ];
 
 export function listFiles(root) {

@@ -7,6 +7,8 @@ import { createSupabaseServer } from "@/lib/supabase/server";
 import { LOCALE_COOKIE, isLocale } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
 import { parseInstant } from "@/lib/runs/instant";
+import { buildPreflightRequest, toDecisionWrite, toVerificationWrite } from "@/lib/engine/results";
+import { analyzePreflight, engineConfigured, engineWriteKey, verifyRun } from "@/server/engine";
 
 export async function setLocale(formData: FormData) {
   const v = formData.get("locale");
@@ -393,4 +395,102 @@ export async function cancelPlannedRun(formData: FormData) {
   const p = uuid.safeParse(formData.get("run_id"));
   if (!p.success) redirect("/runs?e=invalid");
   await updateRun(p.data, { status: "ABORTED" });
+}
+
+// ---- Engine results: decision and verification (0015/0016) ----
+// The engine answers through the contract's adapter (sanitized there); the
+// database stores it only with the server's engine write key and only in the
+// contract's shape. Engine not configured -> nothing is requested or stored.
+
+const ENGINE_ERRORS: [string, string][] = [
+  ["engine_key", "engineKey"], ["engine_stale", "stale"], ["engine_locked", "already"],
+  ["engine_contract", "engineContract"], ["engine_run_not_completed", "notCompleted"],
+];
+const engineErrorCode = (error: { code?: string; message?: string }) =>
+  ENGINE_ERRORS.find(([token]) => error.message?.startsWith(token))?.[1] ?? (error.code === "42501" ? "forbidden" : "failed");
+
+export async function requestEngineDecision(formData: FormData) {
+  const p = uuid.safeParse(formData.get("plan_id"));
+  if (!p.success) redirect("/preflight?e=invalid");
+  const back = `/preflight/${p.data}`;
+  const ctx = await getSessionContext();
+  if (!ctx?.current) redirect("/dashboard");
+  if (!["ADMIN", "ENGINEER"].includes(ctx.current.role)) redirect(`${back}?e=forbidden`);
+  if (!engineConfigured()) redirect(`${back}?e=engineNotConnected`);
+  const supabase = await createSupabaseServer();
+  const { data: plan } = await supabase.from("process_plans")
+    .select("id, version, updated_at, machine_id, recipe_version_id, product_target_id, feed_kg_h, screw_rpm, water_kg_h, steam_kg_h, cutter_rpm, zone_setpoints_c, screw_configuration, die, cutter")
+    .eq("id", p.data).eq("organization_id", ctx.current.organizationId).maybeSingle();
+  if (!plan) redirect(`${back}?e=invalid`);
+  const num = (v: unknown) => (v === null || v === undefined ? null : Number(v));
+  const [machineRes, versionRes, compRes, targetRes, limitRes] = await Promise.all([
+    supabase.from("machines").select("id, manufacturer, model, screw_diameter_mm, l_d, drive_power_kw, configured_max_rpm, configured_max_pressure_bar, zone_count").eq("id", plan.machine_id).maybeSingle(),
+    supabase.from("recipe_versions").select("id, version, status").eq("id", plan.recipe_version_id).maybeSingle(),
+    supabase.from("recipe_components").select("percent_wet, material_id").eq("recipe_version_id", plan.recipe_version_id),
+    plan.product_target_id ? supabase.from("product_target_values").select("parameter, unit, min_value, target_value, max_value").eq("product_target_id", plan.product_target_id) : Promise.resolve({ data: [] }),
+    supabase.from("machine_confirmed_limits").select("parameter, bound, value, unit, source").eq("machine_id", plan.machine_id),
+  ]);
+  const components = (compRes.data ?? []) as { percent_wet: unknown; material_id: string }[];
+  const matRes = components.length
+    ? await supabase.from("materials").select("id, name").in("id", components.map((c) => c.material_id))
+    : { data: [] };
+  const materialName = new Map(((matRes.data ?? []) as { id: string; name: string }[]).map((x) => [x.id, x.name]));
+  const m = machineRes.data as Record<string, unknown> | null;
+  const v = versionRes.data as { id: string; version: number; status: string } | null;
+  const request = buildPreflightRequest({
+    plan: {
+      id: plan.id, version: plan.version, feed_kg_h: num(plan.feed_kg_h), screw_rpm: num(plan.screw_rpm), water_kg_h: num(plan.water_kg_h),
+      steam_kg_h: num(plan.steam_kg_h), cutter_rpm: num(plan.cutter_rpm), zone_setpoints_c: ((plan.zone_setpoints_c ?? []) as unknown[]).map(Number),
+      screw_configuration: plan.screw_configuration, die: plan.die, cutter: plan.cutter,
+    },
+    machine: m ? {
+      id: String(m.id), manufacturer: (m.manufacturer as string | null) ?? null, model: (m.model as string | null) ?? null,
+      screw_diameter_mm: num(m.screw_diameter_mm), l_d: num(m.l_d), drive_power_kw: num(m.drive_power_kw),
+      configured_max_rpm: num(m.configured_max_rpm), configured_max_pressure_bar: num(m.configured_max_pressure_bar), zone_count: num(m.zone_count),
+    } : null,
+    recipe: v ? {
+      version_id: v.id, version: v.version, status: v.status,
+      components: components.map((c) => ({ material: materialName.get(c.material_id) ?? c.material_id, percent_wet: Number(c.percent_wet) })),
+    } : null,
+    targets: ((targetRes.data ?? []) as { parameter: string; unit: string | null; min_value: unknown; target_value: unknown; max_value: unknown }[])
+      .map((t) => ({ parameter: t.parameter, unit: t.unit, min: num(t.min_value), target: num(t.target_value), max: num(t.max_value) })),
+    limits: ((limitRes.data ?? []) as { parameter: string; bound: string; value: unknown; unit: string; source: string }[])
+      .map((l) => ({ parameter: l.parameter, bound: l.bound, value: Number(l.value), unit: l.unit, source: l.source })),
+  });
+  const answer = await analyzePreflight(request);
+  if (!answer.ok) redirect(`${back}?e=engineError`);
+  const write = toDecisionWrite(answer.result);
+  if (!write) redirect(`${back}?e=engineNotConnected`);
+  const key = engineWriteKey();
+  if (!key) redirect(`${back}?e=engineKeyMissing`);
+  const { error } = await supabase.rpc("record_engine_decision", {
+    p_key: key, p_plan: plan.id, p_plan_updated_at: plan.updated_at, p_decision: write,
+  });
+  if (error) redirect(`${back}?e=${engineErrorCode(error)}`);
+  revalidatePath(back);
+  redirect(back);
+}
+
+export async function requestEngineVerification(formData: FormData) {
+  const p = uuid.safeParse(formData.get("run_id"));
+  if (!p.success) redirect("/runs?e=invalid");
+  const back = `/runs/${p.data}`;
+  const ctx = await getSessionContext();
+  if (!ctx?.current) redirect("/dashboard");
+  if (!["ADMIN", "ENGINEER"].includes(ctx.current.role)) redirect(`${back}?e=forbidden`);
+  if (!engineConfigured()) redirect(`${back}?e=engineNotConnected`);
+  const supabase = await createSupabaseServer();
+  const { data: run } = await supabase.from("runs").select("status").eq("id", p.data).eq("organization_id", ctx.current.organizationId).maybeSingle();
+  if (!run) redirect(`${back}?e=invalid`);
+  if (run.status !== "COMPLETED") redirect(`${back}?e=notCompleted`);
+  const answer = await verifyRun(p.data);
+  if (!answer.ok) redirect(`${back}?e=engineError`);
+  const key = engineWriteKey();
+  if (!key) redirect(`${back}?e=engineKeyMissing`);
+  const { error } = await supabase.rpc("record_engine_verification", {
+    p_key: key, p_run: p.data, p_verification: toVerificationWrite(answer.result),
+  });
+  if (error) redirect(`${back}?e=${engineErrorCode(error)}`);
+  revalidatePath(back);
+  redirect(back);
 }

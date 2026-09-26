@@ -86,7 +86,8 @@
     "verificationKind": {
       "PROCESS": "Proces",
       "PRODUCT": "Produkt",
-      "FINAL": "Końcowa"
+      "FINAL": "Końcowa",
+      "ENGINE": "Silnik (cały przebieg)"
     },
     "verificationState": {
       "VERIFIED_PASS": "Zweryfikowano: PASS",
@@ -131,7 +132,15 @@
     "locked": "Zablokowane: rozpoczętego lub zakończonego przebiegu ani jego planu nie można zmienić ani usunąć.",
     "transition": "Taka zmiana statusu jest niedozwolona (ZAPLANOWANY → W TOKU → ZAKOŃCZONY lub PRZERWANY).",
     "machine": "Plan dotyczy innej maszyny.",
-    "time": "Czas musi zawierać przesunięcie strefy (np. 2026-09-26T08:00+02:00) i nie może być w przyszłości."
+    "time": "Czas musi zawierać przesunięcie strefy (np. 2026-09-26T08:00+02:00) i nie może być w przyszłości.",
+    "engineNotConnected": "Silnik nie jest podłączony (brak EXTRUSION_CORE_API_URL / TOKEN). Nic nie wysłano ani nie zapisano.",
+    "engineError": "Silnik nie odpowiedział w kształcie kontraktu. Nic nie zapisano.",
+    "engineKeyMissing": "Silnik odpowiedział, ale na serwerze brak ENGINE_WRITE_KEY. Nic nie zapisano.",
+    "engineKey": "Klucz zapisu silnika nie jest zarejestrowany w bazie. Nic nie zapisano.",
+    "engineContract": "Odpowiedź była poza kontraktem silnika i została odrzucona. Nic nie zapisano.",
+    "stale": "Plan zmienił się, gdy silnik podejmował decyzję. Zapytaj ponownie.",
+    "notCompleted": "Przebieg weryfikuje się dopiero po zakończeniu.",
+    "already": "Już wykonane: plan jest już zatwierdzony."
   },
   "form": {
     "add": "Dodaj",
@@ -631,8 +640,22 @@
       "forbidden": "Twoja rola nie pozwala na tę operację.",
       "failed": "Operacja nie powiodła się.",
       "notApprovable": "Ta decyzja nie pozwala na zatwierdzenie.",
-      "already": "Plan jest już zatwierdzony."
-    }
+      "already": "Plan jest już zatwierdzony.",
+      "engineNotConnected": "Silnik nie jest podłączony (brak EXTRUSION_CORE_API_URL / TOKEN). Nic nie wysłano ani nie zapisano.",
+      "engineError": "Silnik nie odpowiedział w kształcie kontraktu. Nic nie zapisano.",
+      "engineKeyMissing": "Silnik odpowiedział, ale na serwerze brak ENGINE_WRITE_KEY. Nic nie zapisano.",
+      "engineKey": "Klucz zapisu silnika nie jest zarejestrowany w bazie. Nic nie zapisano.",
+      "engineContract": "Odpowiedź była poza kontraktem silnika i została odrzucona. Nic nie zapisano.",
+      "stale": "Plan zmienił się, gdy silnik podejmował decyzję. Zapytaj ponownie.",
+      "notCompleted": "Przebieg weryfikuje się dopiero po zakończeniu.",
+      "locked": "Zablokowane: na tym planie rozpoczęto przebieg."
+    },
+    "confidence": "Pewność",
+    "risks": "Kategorie ryzyka",
+    "proposedTest": "Proponowany test",
+    "zone": "strefa",
+    "askEngine": "Poproś silnik o decyzję",
+    "askEngineHint": "Wysyła zapisane dane planu do silnika. Zapisywana jest tylko odpowiedź w kształcie kontraktu; zatwierdzenie pozostaje osobnym krokiem."
   },
   "runDetail": {
     "title": "Przebieg",
@@ -698,7 +721,9 @@
     "outcome": "Wynik",
     "end": "Zakończ przebieg",
     "final": "Stan ostateczny: przebiegu nie można już zmienić.",
-    "timeOptional": "Czas z przesunięciem strefy, puste = teraz"
+    "timeOptional": "Czas z przesunięciem strefy, puste = teraz",
+    "askVerification": "Poproś silnik o weryfikację przebiegu",
+    "verificationEngineOff": "Weryfikacja przez silnik niedostępna: silnik nie jest podłączony."
   },
   "history": {
     "title": "Historia",

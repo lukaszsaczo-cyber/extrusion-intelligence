@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getT } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
-import { compareWithContract, METRIC_UNITS } from "@/server/engine";
+import { compareWithContract, engineConfigured, METRIC_UNITS } from "@/server/engine";
 import { createSupabaseServer } from "@/lib/supabase/server";
-import { addMeasurement, cancelPlannedRun, createProductSample, endRun, sealRunAudit, setRunPlan, startRun } from "@/server/actions";
+import { addMeasurement, cancelPlannedRun, createProductSample, endRun, requestEngineVerification, sealRunAudit, setRunPlan, startRun } from "@/server/actions";
 import type { Snapshot } from "@/lib/diagnosis/snapshot";
 import { predictedVsActual, productCheck, type Measurement, type Prediction, type TargetValue } from "@/lib/verification/checks";
 import { DataTable, Empty, Field, FormGrid, Notice, PageHeader, Panel, Select, formErrorKey } from "@/components/ui";
@@ -239,6 +239,12 @@ export default async function RunDetail({ params, searchParams }: {
               <span key="s" className={stateTone(v.state)}>{t(`dashboard.verificationState.${v.state}`)}</span>,
               v.evidence_saved ? t("runDetail.evidenceSaved") : t("runDetail.evidenceNotSaved"), date(v.verified_at)])} />
         )}
+        {canSeal && run.status === "COMPLETED" && (engineConfigured() ? (
+          <form action={requestEngineVerification} className="border-t border-line px-4 py-3">
+            <input type="hidden" name="run_id" value={id} />
+            <button className="rounded bg-teal px-3 py-2 text-sm font-medium text-ground">{t("runDetail.askVerification")}</button>
+          </form>
+        ) : <Notice text={t("runDetail.verificationEngineOff")} />)}
       </Panel>
 
       <Panel title={t("audit.title")}>

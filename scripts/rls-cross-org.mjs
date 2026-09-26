@@ -1,6 +1,7 @@
 // Runs the database tests against a database: cross-org RLS (with its negative
 // control), the stage 5 approval flow, the stage 6 verification guard, the
-// stage 7 audit seal and permission matrix, and the run/plan guard (0014).
+// stage 7 audit seal and permission matrix, the run/plan guard (0014) and
+// the engine results write path (0015/0016).
 // Every SQL file rolls back everything it creates. Needs SUPABASE_DB_URL and
 // psql; without them the result is NOT RUN (exit 0, never reported as PASS).
 import { execFileSync } from "node:child_process";
@@ -40,4 +41,6 @@ const matrix = run("supabase/tests/permissions_matrix.sql", "PERMISSIONS_MATRIX_
 console.log("permissions matrix:", JSON.stringify(matrix));
 const runGuard = run("supabase/tests/run_plan_guard.sql", "RUN_PLAN_GUARD_RESULT");
 console.log("run/plan guard:", JSON.stringify(runGuard));
-process.exit([result, approval, verification, audit, matrix, runGuard].every((r) => r.verdict === "PASS") ? 0 : 1);
+const engineResults = run("supabase/tests/engine_results.sql", "ENGINE_RESULTS_RESULT");
+console.log("engine results:", JSON.stringify(engineResults));
+process.exit([result, approval, verification, audit, matrix, runGuard, engineResults].every((r) => r.verdict === "PASS") ? 0 : 1);

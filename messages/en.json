@@ -86,7 +86,8 @@
     "verificationKind": {
       "PROCESS": "Process",
       "PRODUCT": "Product",
-      "FINAL": "Final"
+      "FINAL": "Final",
+      "ENGINE": "Engine (whole run)"
     },
     "verificationState": {
       "VERIFIED_PASS": "Verified: PASS",
@@ -131,7 +132,15 @@
     "locked": "Locked: a started or finished run, and the plan it ran on, cannot be changed or deleted.",
     "transition": "This status change is not allowed (PLANNED → RUNNING → COMPLETED or ABORTED).",
     "machine": "The plan is for another machine.",
-    "time": "Time must include a time-zone offset (e.g. 2026-09-26T08:00+02:00) and cannot be in the future."
+    "time": "Time must include a time-zone offset (e.g. 2026-09-26T08:00+02:00) and cannot be in the future.",
+    "engineNotConnected": "The engine is not connected (EXTRUSION_CORE_API_URL / TOKEN not set). Nothing was requested or stored.",
+    "engineError": "The engine did not answer in the contract's shape. Nothing was stored.",
+    "engineKeyMissing": "The engine answered, but ENGINE_WRITE_KEY is not set on the server. Nothing was stored.",
+    "engineKey": "The engine write key is not registered in the database. Nothing was stored.",
+    "engineContract": "The answer was outside the engine contract and was refused. Nothing was stored.",
+    "stale": "The plan changed while the engine was deciding. Ask again.",
+    "notCompleted": "A run is verified only after it is completed.",
+    "already": "Already done: the plan is already approved."
   },
   "form": {
     "add": "Add",
@@ -631,8 +640,22 @@
       "forbidden": "Your role does not allow this operation.",
       "failed": "The operation failed.",
       "notApprovable": "This decision does not allow approval.",
-      "already": "The plan is already approved."
-    }
+      "already": "The plan is already approved.",
+      "engineNotConnected": "The engine is not connected (EXTRUSION_CORE_API_URL / TOKEN not set). Nothing was requested or stored.",
+      "engineError": "The engine did not answer in the contract's shape. Nothing was stored.",
+      "engineKeyMissing": "The engine answered, but ENGINE_WRITE_KEY is not set on the server. Nothing was stored.",
+      "engineKey": "The engine write key is not registered in the database. Nothing was stored.",
+      "engineContract": "The answer was outside the engine contract and was refused. Nothing was stored.",
+      "stale": "The plan changed while the engine was deciding. Ask again.",
+      "notCompleted": "A run is verified only after it is completed.",
+      "locked": "Locked: a run was started on this plan."
+    },
+    "confidence": "Confidence",
+    "risks": "Risk categories",
+    "proposedTest": "Proposed test",
+    "zone": "zone",
+    "askEngine": "Ask the engine for a decision",
+    "askEngineHint": "Sends the plan's stored inputs to the engine. Only a contract-shaped answer is stored; approval stays a separate step."
   },
   "runDetail": {
     "title": "Run",
@@ -698,7 +721,9 @@
     "outcome": "Outcome",
     "end": "End run",
     "final": "Final state: the run can no longer be changed.",
-    "timeOptional": "Time with offset, empty = now"
+    "timeOptional": "Time with offset, empty = now",
+    "askVerification": "Ask the engine to verify this run",
+    "verificationEngineOff": "Engine verification is not available: the engine is not connected."
   },
   "history": {
     "title": "History",

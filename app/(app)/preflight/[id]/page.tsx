@@ -4,12 +4,13 @@ import { getT } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
 import { getEngineHealth } from "@/server/engine";
 import { createSupabaseServer } from "@/lib/supabase/server";
-import { approvePlan } from "@/server/actions";
+import { approvePlan, requestEngineDecision } from "@/server/actions";
 import { checkKnownLimits, type LimitInput } from "@/lib/preflight/known-limits";
 import { DataTable, Notice, PageHeader, Panel } from "@/components/ui";
 
 const APPROVABLE = ["READY_FOR_OPERATOR_REVIEW", "SHADOW_TEST_ONLY", "TEST_REQUIRED"];
-const ERRORS = ["invalid", "forbidden", "failed", "notApprovable", "already"];
+const ERRORS = ["invalid", "forbidden", "failed", "notApprovable", "already", "locked",
+  "engineNotConnected", "engineError", "engineKeyMissing", "engineKey", "engineContract", "stale"];
 const tone = (s: string) => (s === "PASS" ? "text-teal" : s === "FAIL" ? "text-stop" : "text-caution");
 
 export default async function PlanPreflight({ params, searchParams }: {
@@ -24,7 +25,7 @@ export default async function PlanPreflight({ params, searchParams }: {
   const orgId = ctx.current.organizationId;
   const supabase = await createSupabaseServer();
   const { data: planData } = await supabase.from("process_plans")
-    .select("id, version, machine_id, recipe_version_id, product_target_id, feed_kg_h, screw_rpm, water_kg_h, steam_kg_h, cutter_rpm, zone_setpoints_c, screw_configuration, die, cutter, preflight_status, confidence_label, risk_categories, missing_inputs, preflight_at, approved_by, approved_at")
+    .select("id, version, machine_id, recipe_version_id, product_target_id, feed_kg_h, screw_rpm, water_kg_h, steam_kg_h, cutter_rpm, zone_setpoints_c, screw_configuration, die, cutter, preflight_status, confidence_label, risk_categories, missing_inputs, preflight_at, proposed_test_parameter, proposed_test_current, proposed_test_proposed, proposed_test_unit, proposed_test_zone, proposed_test_observe_s, approved_by, approved_at")
     .eq("id", id).eq("organization_id", orgId).maybeSingle();
   if (!planData) notFound();
   const plan = planData as Record<string, unknown> & {
@@ -59,6 +60,7 @@ export default async function PlanPreflight({ params, searchParams }: {
   const machineLabel = machine ? [machine.manufacturer, machine.model, machine.serial_number].filter(Boolean).join(" ") || na : na;
   const approvable = plan.preflight_status !== null && APPROVABLE.includes(plan.preflight_status) && !plan.approved_at;
   const canApprove = ["ADMIN", "ENGINEER", "OPERATOR"].includes(ctx.current.role);
+  const canAskEngine = ["ADMIN", "ENGINEER"].includes(ctx.current.role) && !plan.approved_at;
   const v = (x: unknown) => <span className="num">{x === null || x === undefined || x === "" ? na : String(x)}</span>;
 
   return (
@@ -106,12 +108,23 @@ export default async function PlanPreflight({ params, searchParams }: {
             <p>{t("preflight.engineDecision")}: <span className="font-medium">{t(`dashboard.decision.${plan.preflight_status}`)}</span></p>
             {plan.preflight_at ? <p className="text-muted">{fmt.format(new Date(String(plan.preflight_at)))}</p> : null}
             {plan.missing_inputs?.length ? <p className="text-muted">{t("preflight.missingInputs")}: <span className="num">{plan.missing_inputs.join(", ")}</span></p> : null}
+            {plan.confidence_label ? <p className="text-muted">{t("preflight.confidence")}: {String(plan.confidence_label)}</p> : null}
+            {plan.risk_categories?.length ? <p className="text-muted">{t("preflight.risks")}: <span className="num">{plan.risk_categories.join(", ")}</span></p> : null}
+            {plan.proposed_test_parameter ? <p className="text-muted">{t("preflight.proposedTest")}: <span className="num">
+              {`${String(plan.proposed_test_parameter)}${plan.proposed_test_zone ? ` (${t("preflight.zone")} ${String(plan.proposed_test_zone)})` : ""}: ${String(plan.proposed_test_current)} → ${String(plan.proposed_test_proposed)} ${String(plan.proposed_test_unit ?? "")}, ${String(plan.proposed_test_observe_s)} s`}</span></p> : null}
           </div>
         ) : (
           <div className="px-4 py-4 text-sm">
             <p className="font-medium text-unknown">{na}</p>
             <p className="mt-1 text-muted">{engine.connected ? t("preflight.engineNotRun") : t("preflight.engineDisconnected")}</p>
           </div>
+        )}
+        {canAskEngine && engine.connected && (
+          <form action={requestEngineDecision} className="border-t border-line px-4 py-3">
+            <input type="hidden" name="plan_id" value={id} />
+            <p className="mb-2 text-sm text-muted">{t("preflight.askEngineHint")}</p>
+            <button className="rounded bg-teal px-3 py-2 text-sm font-medium text-ground">{t("preflight.askEngine")}</button>
+          </form>
         )}
       </Panel>
 
