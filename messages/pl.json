@@ -973,6 +973,9 @@
       "MIN": "minimum",
       "MAX": "maksimum",
       "TYPICAL_RANGE": "typowy zakres"
-    }
+    },
+    "publisher": "wydawca dokumentu",
+    "tableOrigin": "Pochodzenie tabeli",
+    "selected": "wybrane parametry z tabeli źródła, nie cała tabela"
   }
 }

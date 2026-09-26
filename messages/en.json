@@ -973,6 +973,9 @@
       "MIN": "minimum",
       "MAX": "maximum",
       "TYPICAL_RANGE": "typical range"
-    }
+    },
+    "publisher": "document publisher",
+    "tableOrigin": "Table origin",
+    "selected": "selected parameters of the source table, not the whole table"
   }
 }

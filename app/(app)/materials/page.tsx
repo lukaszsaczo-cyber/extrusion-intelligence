@@ -9,7 +9,7 @@ type MaterialRow = { id: string; name: string; supplier: string | null; material
 type Spec = {
   id: string; code: string; product_name: string; source_org: string; parameter: string; unit: string; basis: string | null;
   kind: "MIN" | "MAX" | "TYPICAL_RANGE"; value_min: number | null; value_max: number | null; method: string | null;
-  source_url: string; retrieved_on: string;
+  source_url: string; retrieved_on: string; table_origin: string | null;
 };
 
 export default async function MaterialsPage({ searchParams }: { searchParams: Promise<{ e?: string }> }) {
@@ -24,7 +24,7 @@ export default async function MaterialsPage({ searchParams }: { searchParams: Pr
     supabase.from("materials").select("id, name, supplier, material_lots(count)")
       .eq("organization_id", ctx.current.organizationId).order("name"),
     supabase.from("reference_material_specs")
-      .select("id, code, product_name, source_org, parameter, unit, basis, kind, value_min, value_max, method, source_url, retrieved_on")
+      .select("id, code, product_name, source_org, parameter, unit, basis, kind, value_min, value_max, method, source_url, retrieved_on, table_origin")
       .order("code").order("source_org").order("parameter").order("kind"),
   ]);
   const materials = (data ?? []) as MaterialRow[];
@@ -43,11 +43,12 @@ export default async function MaterialsPage({ searchParams }: { searchParams: Pr
         <Notice text={t("catalog.note")} />
         {sheets.length === 0 ? <Empty text={t("catalog.empty")} /> : sheets.map((sh) => {
           const rows = specs.filter((s) => s.code === sh.code && s.source_org === sh.source_org && s.product_name === sh.product_name);
+          const origins = [...new Set(rows.map((r) => r.table_origin).filter((o): o is string => !!o))];
           return (
             <div key={sh.id} className="border-t border-line">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 text-sm">
                 <span className="num font-medium">{sh.code}</span>
-                <span className="mr-auto text-muted">{sh.product_name} · {sh.source_org}</span>
+                <span className="mr-auto text-muted">{sh.product_name} · <span className="text-ink">{t("catalog.publisher")}:</span> {sh.source_org}</span>
                 <a href={sh.source_url} target="_blank" rel="noopener noreferrer" className="text-teal hover:underline">{t("catalog.source")}</a>
                 {canEdit && (owned.has(`${sh.code}|${sh.source_org}`) ? <span className="text-muted">{t("catalog.added")}</span> : (
                   <form action={createMaterial}>
@@ -60,7 +61,8 @@ export default async function MaterialsPage({ searchParams }: { searchParams: Pr
               <DataTable head={[t("catalog.parameter"), t("catalog.kind"), t("catalog.value"), t("catalog.basis"), t("catalog.method")]}
                 rows={rows.map((s) => [s.parameter, t(`catalog.kindValue.${s.kind}`), <span key="v" className="num">{specValue(s)} {s.unit}</span>,
                   s.basis ?? na, s.method ?? na])} />
-              <p className="px-4 pb-3 text-xs text-muted">{t("catalog.retrieved")} <span className="num">{sh.retrieved_on}</span></p>
+              {origins.length > 0 && <p className="px-4 pt-2 text-xs text-caution">{t("catalog.tableOrigin")}: {origins.join("; ")}</p>}
+              <p className="px-4 pb-3 text-xs text-muted">{t("catalog.retrieved")} <span className="num">{sh.retrieved_on}</span> · {t("catalog.selected")}</p>
             </div>
           );
         })}
