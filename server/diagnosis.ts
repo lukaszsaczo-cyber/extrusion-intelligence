@@ -9,6 +9,7 @@ import { TooManySamples, loadQuarantinedIds, loadRunSamples, loadTagMap } from "
 import { buildSnapshot, canonicalJson, type LimitRow, type Snapshot } from "@/lib/diagnosis/snapshot";
 import { GATES_VERSION, evaluateGates } from "@/lib/diagnosis/gates";
 import type { QSample, Verdict } from "@/lib/quality/rules";
+import { logServerError } from "@/lib/log/server-error";
 
 async function prepare(formData: FormData) {
   const p = z.string().uuid().safeParse(formData.get("run_id"));
@@ -82,7 +83,7 @@ export async function refreshState(formData: FormData) {
     sha256: createHash("sha256").update(canonicalJson(snapshot), "utf8").digest("hex"),
   });
   if (error) {
-    console.error("[diagnosis] snapshot insert failed", error.code);
+    logServerError("refreshState", error);
     redirect(`${back}?e=${error.code === "42501" ? "forbidden" : "failed"}`);
   }
   revalidatePath(back);
@@ -106,7 +107,7 @@ export async function runDiagnosis(formData: FormData) {
     gates: outcome.gates,
   });
   if (error) {
-    console.error("[diagnosis] diagnosis insert failed", error.code);
+    logServerError("runDiagnosis", error);
     redirect(`${back}?e=${error.code === "42501" ? "forbidden" : "failed"}`);
   }
   revalidatePath(back);

@@ -8,6 +8,7 @@ import { LOCALE_COOKIE, isLocale } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
 import { parseInstant } from "@/lib/runs/instant";
 import { STEPS } from "@/lib/fail-loop/steps";
+import { logServerError } from "@/lib/log/server-error";
 import { buildPreflightRequest, toDecisionWrite, toVerificationWrite } from "@/lib/engine/results";
 import { analyzePreflight, engineConfigured, engineWriteKey, verifyRun } from "@/server/engine";
 
@@ -32,7 +33,10 @@ export async function createOrganization(formData: FormData) {
   const supabase = await createSupabaseServer();
   // Existing SECURITY DEFINER RPC: caller becomes ADMIN. No direct INSERT exists.
   const { error } = await supabase.rpc("create_organization", { org_name: parsed.data });
-  if (error) redirect("/dashboard?e=failed");
+  if (error) {
+    logServerError("createOrganization", error);
+    redirect("/dashboard?e=failed");
+  }
   revalidatePath("/", "layout");
   redirect("/dashboard");
 }
@@ -73,7 +77,10 @@ async function insertForOrg(path: string, table: string, row: Record<string, unk
   if (!ctx?.current) redirect("/dashboard");
   const supabase = await createSupabaseServer();
   const { error } = await supabase.from(table).insert({ ...row, organization_id: ctx.current.organizationId });
-  if (error) redirect(`${path}?e=${errorCode(error)}`);
+  if (error) {
+    logServerError(`insert:${table}`, error);
+    redirect(`${path}?e=${errorCode(error)}`);
+  }
   revalidatePath(path);
   redirect(path);
 }
@@ -179,8 +186,14 @@ export async function renameOrganization(formData: FormData) {
   // RLS lets only ADMIN update; a non-admin update matches 0 rows, so ask for the row back.
   const { data, error } = await supabase.from("organizations")
     .update({ name: p.data }).eq("id", ctx.current.organizationId).select("id");
-  if (error) redirect("/settings?e=failed");
-  if (!data?.length) redirect("/settings?e=forbidden");
+  if (error) {
+    logServerError("renameOrganization", error);
+    redirect("/settings?e=failed");
+  }
+  if (!data?.length) {
+    logServerError("renameOrganization", null, { reason: "no_rows" });
+    redirect("/settings?e=forbidden");
+  }
   revalidatePath("/", "layout");
   redirect("/settings");
 }
@@ -230,8 +243,14 @@ export async function finalizeRecipeVersion(formData: FormData) {
   const supabase = await createSupabaseServer();
   const { data, error } = await supabase.from("recipe_versions").update({ status: "FINAL" })
     .eq("id", p.data.recipe_version_id).select("id");
-  if (error) redirect(`${back}?e=${error.message.includes("sum to 100") ? "sum" : error.code === "42501" ? "forbidden" : "failed"}`);
-  if (!data?.length) redirect(`${back}?e=forbidden`);
+  if (error) {
+    logServerError("finalizeRecipeVersion", error);
+    redirect(`${back}?e=${error.message.includes("sum to 100") ? "sum" : error.code === "42501" ? "forbidden" : "failed"}`);
+  }
+  if (!data?.length) {
+    logServerError("finalizeRecipeVersion", null, { reason: "no_rows" });
+    redirect(`${back}?e=forbidden`);
+  }
   revalidatePath(back);
   redirect(back);
 }
@@ -277,7 +296,10 @@ export async function createProcessPlan(formData: FormData) {
   const supabase = await createSupabaseServer();
   const { data, error } = await supabase.from("process_plans")
     .insert({ ...p.data, organization_id: ctx.current.organizationId }).select("id").single();
-  if (error || !data) redirect(`/preflight?e=${error?.code === "42501" ? "forbidden" : "failed"}`);
+  if (error || !data) {
+    logServerError("createProcessPlan", error, error ? undefined : { reason: "no_row" });
+    redirect(`/preflight?e=${error?.code === "42501" ? "forbidden" : "failed"}`);
+  }
   revalidatePath("/preflight");
   redirect(`/preflight/${data.id}`);
 }
@@ -291,6 +313,7 @@ export async function approvePlan(formData: FormData) {
   const supabase = await createSupabaseServer();
   const { error } = await supabase.rpc("approve_process_plan", { plan: p.data });
   if (error) {
+    logServerError("approvePlan", error);
     const m = error.message;
     redirect(`${back}?e=${m.includes("forbidden") ? "forbidden" : m.includes("not available") ? "notApprovable" : m.includes("already") ? "already" : "failed"}`);
   }
@@ -338,7 +361,10 @@ export async function sealRunAudit(formData: FormData) {
   const back = `/runs/${p.data}`;
   const supabase = await createSupabaseServer();
   const { data, error } = await supabase.rpc("seal_run_audit", { p_run_id: p.data });
-  if (error || typeof data !== "string") redirect(`${back}?e=${error?.code === "42501" ? "forbidden" : "failed"}`);
+  if (error || typeof data !== "string") {
+    logServerError("sealRunAudit", error, error ? undefined : { reason: "no_id" });
+    redirect(`${back}?e=${error?.code === "42501" ? "forbidden" : "failed"}`);
+  }
   revalidatePath("/audit");
   redirect(`/audit/${data}`);
 }
@@ -361,8 +387,14 @@ async function updateRun(runId: string, patch: Record<string, unknown>) {
   const back = `/runs/${runId}`;
   const supabase = await createSupabaseServer();
   const { data, error } = await supabase.from("runs").update(patch).eq("id", runId).select("id");
-  if (error) redirect(`${back}?e=${errorCode(error)}`);
-  if (!data?.length) redirect(`${back}?e=forbidden`);
+  if (error) {
+    logServerError("updateRun", error);
+    redirect(`${back}?e=${errorCode(error)}`);
+  }
+  if (!data?.length) {
+    logServerError("updateRun", null, { reason: "no_rows" });
+    redirect(`${back}?e=forbidden`);
+  }
   revalidatePath(back);
   redirect(back);
 }
@@ -459,7 +491,10 @@ export async function requestEngineDecision(formData: FormData) {
       .map((l) => ({ parameter: l.parameter, bound: l.bound, value: Number(l.value), unit: l.unit, source: l.source })),
   });
   const answer = await analyzePreflight(request);
-  if (!answer.ok) redirect(`${back}?e=engineError`);
+  if (!answer.ok) {
+    logServerError("requestEngineDecision", null, { reason: "engine_answer", errorId: answer.error.errorId });
+    redirect(`${back}?e=engineError`);
+  }
   const write = toDecisionWrite(answer.result);
   if (!write) redirect(`${back}?e=engineNotConnected`);
   const key = engineWriteKey();
@@ -467,7 +502,10 @@ export async function requestEngineDecision(formData: FormData) {
   const { error } = await supabase.rpc("record_engine_decision", {
     p_key: key, p_plan: plan.id, p_plan_updated_at: plan.updated_at, p_decision: write,
   });
-  if (error) redirect(`${back}?e=${engineErrorCode(error)}`);
+  if (error) {
+    logServerError("requestEngineDecision", error);
+    redirect(`${back}?e=${engineErrorCode(error)}`);
+  }
   revalidatePath(back);
   redirect(back);
 }
@@ -485,13 +523,19 @@ export async function requestEngineVerification(formData: FormData) {
   if (!run) redirect(`${back}?e=invalid`);
   if (run.status !== "COMPLETED") redirect(`${back}?e=notCompleted`);
   const answer = await verifyRun(p.data);
-  if (!answer.ok) redirect(`${back}?e=engineError`);
+  if (!answer.ok) {
+    logServerError("requestEngineVerification", null, { reason: "engine_answer", errorId: answer.error.errorId });
+    redirect(`${back}?e=engineError`);
+  }
   const key = engineWriteKey();
   if (!key) redirect(`${back}?e=engineKeyMissing`);
   const { error } = await supabase.rpc("record_engine_verification", {
     p_key: key, p_run: p.data, p_verification: toVerificationWrite(answer.result),
   });
-  if (error) redirect(`${back}?e=${engineErrorCode(error)}`);
+  if (error) {
+    logServerError("requestEngineVerification", error);
+    redirect(`${back}?e=${engineErrorCode(error)}`);
+  }
   revalidatePath(back);
   redirect(back);
 }
@@ -515,7 +559,10 @@ export async function recordProductVerification(formData: FormData) {
   const back = `/runs/${p.data}`;
   const supabase = await createSupabaseServer();
   const { error } = await supabase.rpc("record_product_verification", { p_run: p.data });
-  if (error) redirect(`${back}?e=${failErrorCode(error)}`);
+  if (error) {
+    logServerError("recordProductVerification", error);
+    redirect(`${back}?e=${failErrorCode(error)}`);
+  }
   revalidatePath(back);
   redirect(back);
 }
@@ -525,7 +572,10 @@ export async function openFailCase(formData: FormData) {
   if (!p.success) redirect("/fail-cases?e=invalid");
   const supabase = await createSupabaseServer();
   const { data, error } = await supabase.rpc("open_fail_case", { p_verification: p.data.verification_id });
-  if (error || typeof data !== "string") redirect(`/runs/${p.data.run_id}?e=${error ? failErrorCode(error) : "failed"}`);
+  if (error || typeof data !== "string") {
+    logServerError("openFailCase", error, error ? undefined : { reason: "no_id" });
+    redirect(`/runs/${p.data.run_id}?e=${error ? failErrorCode(error) : "failed"}`);
+  }
   revalidatePath("/fail-cases");
   redirect(`/fail-cases/${data}`);
 }
@@ -558,7 +608,10 @@ export async function recordFailStep(formData: FormData) {
   const { error } = await supabase.rpc("record_fail_step", {
     p_case: p.data.case_id, p_step: p.data.step, p_ref: p.data.ref_id, p_payload: payload,
   });
-  if (error) redirect(`${back}?e=${failErrorCode(error)}`);
+  if (error) {
+    logServerError(`recordFailStep:${p.data.step}`, error);
+    redirect(`${back}?e=${failErrorCode(error)}`);
+  }
   revalidatePath(back);
   redirect(back);
 }
@@ -572,7 +625,10 @@ export async function closeFailCase(formData: FormData) {
   const back = `/fail-cases/${p.data.case_id}`;
   const supabase = await createSupabaseServer();
   const { error } = await supabase.rpc("close_fail_case", { p_case: p.data.case_id, p_note: p.data.note });
-  if (error) redirect(`${back}?e=${failErrorCode(error)}`);
+  if (error) {
+    logServerError("closeFailCase", error);
+    redirect(`${back}?e=${failErrorCode(error)}`);
+  }
   revalidatePath(back);
   redirect(back);
 }

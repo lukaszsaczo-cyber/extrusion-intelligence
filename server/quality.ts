@@ -6,6 +6,7 @@ import { createSupabaseServer } from "@/lib/supabase/server";
 import { getSessionContext } from "@/server/context";
 import { assess, type QSample } from "@/lib/quality/rules";
 import { TooManySamples, loadRunSamples, loadTagMap } from "@/server/run-data";
+import { logServerError } from "@/lib/log/server-error";
 
 // Runs the step-6 rules over every sample of one run and records the result
 // (append-only; a re-check creates a new assessment). Returns to the quality page
@@ -55,7 +56,7 @@ export async function runQualityCheck(formData: FormData) {
     p_quarantine: result.quarantined.map((q) => ({ run_metric_id: q.runMetricId, reason: q.reason, detail: q.detail })),
   });
   if (error) {
-    console.error("[quality] record assessment failed", error.code);
+    logServerError("recordQualityAssessment", error);
     redirect(`${back}?e=${error.code === "42501" ? "forbidden" : "failed"}`);
   }
   revalidatePath(back);

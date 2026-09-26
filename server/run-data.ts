@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Category, QSample, SourceQuality, TagInfo } from "@/lib/quality/rules";
+import { logServerError } from "@/lib/log/server-error";
 
 const PAGE = 1000; // PostgREST returns at most 1000 rows per request
 export const MAX_RUN_SAMPLES = 500_000;
@@ -13,7 +14,10 @@ export async function loadRunSamples(supabase: SupabaseClient, runId: string): P
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await supabase.from("run_metrics").select("id, signal, ts, value, quality")
       .eq("run_id", runId).order("id").range(from, from + PAGE - 1);
-    if (error) throw error;
+    if (error) {
+      logServerError("loadRunSamples", error);
+      throw error;
+    }
     for (const m of data ?? []) {
       samples.push({
         id: m.id as string, signal: m.signal as string, tsMs: Date.parse(m.ts as string),
@@ -31,7 +35,10 @@ export async function loadQuarantinedIds(supabase: SupabaseClient, assessmentId:
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await supabase.from("quality_quarantined_metrics").select("run_metric_id")
       .eq("assessment_id", assessmentId).order("id").range(from, from + PAGE - 1);
-    if (error) throw error;
+    if (error) {
+      logServerError("loadQuarantinedIds", error);
+      throw error;
+    }
     for (const q of data ?? []) ids.add(q.run_metric_id as string);
     if (!data || data.length < PAGE) return ids;
   }

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { getSessionContext } from "@/server/context";
 import { MAX_FILE_BYTES, buildSamples, type ImportError, type SampleQuality } from "@/lib/import/run-file";
+import { logServerError } from "@/lib/log/server-error";
 
 export type ImportState =
   | { status: "idle" }
@@ -110,12 +111,12 @@ export async function importRunFile(_prev: ImportState, formData: FormData): Pro
     p_metrics: parsed.samples,
   });
   if (error) {
+    logServerError("importRunFile", error);
     if (error.code === "23505") return { status: "error", code: "duplicate" };
     if (error.code === "23514" && error.message.includes("sampling metadata")) {
       return { status: "error", code: "samplingConflict" };
     }
     if (error.code === "42501") return { status: "error", code: "forbidden" };
-    console.error("[import] run file import failed", error.code);
     return { status: "error", code: "failed" };
   }
 
