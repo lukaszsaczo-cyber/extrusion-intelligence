@@ -26,8 +26,16 @@ unit tests and database tests.
 | Verdict | Count | AR |
 |---|---|---|
 | PASS | 15 | 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 14, 15, 17, 19 |
-| PARTIAL | 4 | 7, 13, 16, 20 |
-| FAIL | 1 | 18 |
+| PARTIAL | 5 | 7, 13, 16, 18, 20 |
+| FAIL | 0 | — |
+
+**Update 2026-09-26 (fix 4).** AR-18 moves from FAIL to PARTIAL.
+- A protected-term scan now covers build output, messages and API responses.
+  It is part of `npm run build` and fails the build on a hit.
+- The runtime guard now reads digests from the environment.
+- Controls on the real build detect a planted term and pass a clean one.
+- The check against the **real** terms is NOT RUN until `TERM_GUARD_KEY` and
+  the digests are set (`docs/TERM_GUARD.md`).
 
 **Update 2026-09-26 (fix 3).** AR-15 is PASS.
 - The JSON export now carries the contract's own audit export
@@ -79,7 +87,7 @@ Fixes are listed at the end.
 | 15 | Audit: events, decisions, verifications, user, time, integrity; print; JSON export; allowlist | PASS (fixed 2026-09-26) | <ul><li>Seal, SHA-256 hash chain, integrity check and print. DB audit_seal PASS 16/16, now with audit-v2 content checks; it detects an edited, a re-hashed and a removed record.</li><li>Export allowlist: 5 tests; its keys equal what 0017 builds.</li><li>Fix 3 adds `contract_export` to the JSON export. It is the contract's `buildAuditExport` over the allowlisted snapshot: all `AUDIT_FIELDS` plus `finalAuditHash`, reproducible. `lib/audit/contract-record.ts`, 3 tests using the real contract.</li><li>Operator = the user who started the run. It is set by the database (0017) and fixed after the start (run_plan_guard 23/23).</li><li>Mapping kept strict:<ul><li>audit-v1 fields that do not exist are null;</li><li>several files are exported as lists;</li><li>the engine's whole-run verification (kind ENGINE) is **not** mapped to process, product or final, because the contract does not say which one it is. This needs confirmation from the engine side.</li></ul></li></ul> |
 | 16 | Settings: organization, users, configuration, permissions, app settings | **PARTIAL** | <ul><li>Present:<ul><li>organization and sites;</li><li>the member list with names;</li><li>configuration;</li><li>the permission matrix, whose 12 × 4 cells match the database (DB test PASS).</li></ul></li><li>Missing: inviting users and changing roles (needs Auth admin). App settings are only the language.</li></ul> |
 | 17 | Security: RLS per company with cross-org tests; server-only; ESLint `no-restricted-imports` | PASS | <ul><li>Cross-org RLS PASS: 28 tables, 146 checks; the negative control DETECTS_LEAK.</li><li>ESLint boundary rule: 7 tests.</li><li>`import "server-only"` in `server/engine.ts`, `lib/supabase/server.ts` and `server/people.ts`.</li><li>TRUNCATE was revoked from client roles in 0013.</li><li>Open: Supabase advisor warns that leaked-password protection is off. This is a dashboard setting.</li></ul> |
-| 18 | Protected term guard: TERM_GUARD_KEY + HMAC digests; checks build output, client chunks, messages, API responses; without secrets NOT RUN | **FAIL** | <ul><li>The runtime guard exists in the adapter: it fails closed and drops free text.</li><li>The real-term test is NOT RUN (no key, terms or digests).</li><li>**No scan of build output, client chunks, messages or API responses for protected terms exists.** The build scan (`check-bundle`, canary) looks only for secret values.</li></ul> |
+| 18 | Protected term guard: TERM_GUARD_KEY + HMAC digests; checks build output, client chunks, messages, API responses; without secrets NOT RUN | PARTIAL (was FAIL; fix 4, 2026-09-26) | <ul><li>`scripts/lib/term-scan.mjs` scans:<ul><li>`.next/static` and `.next/server`;</li><li>`messages/*.json`;</li><li>API responses (`TERM_SCAN_BASE_URL`).</li></ul></li><li>It uses the contract's guard. Reports name files and paths only, never a term. It runs in `npm run build`, where a FAIL stops the build. Without a key or digests it is NOT RUN; PASS needs all three areas.</li><li>6 tests: a planted term is found in every area, the report does not contain it, unconfigured or missing input is NOT RUN, and the glued-word limit is pinned.</li><li>Runtime guard: digests from `TERM_GUARD_DIGESTS` (before: `digests: []`).</li><li>Controls on the real build with a temporary key: a present word gives FAIL (file named); an absent term gives PASS over 155 build files, 2 messages files and 2 API responses.</li><li>Open: **NOT RUN** with the real terms (no key, no digests), and contract test 3 is still SKIP.</li></ul> |
 | 19 | Secret exposure test with canary values after `next build` | PASS | <ul><li>`npm run test:canary` PASS: 5 canaries, 0 occurrences in `.next/static`.</li><li>The scanner's own negative controls: 5 tests.</li></ul> |
 | 20 | Stages 1–8, one commit per stage, gate with PASS evidence before the next | **PARTIAL** | <ul><li>Commits: `0b2225b` (1), `bd8061d` (2), `605530d` (3, part), `e4f0d15` (4), `83ceb3f` (5), `eba28a1` (6), `fb30398` (7), plus this report (8).</li><li>The stage 3 gate is not complete: term guard NOT RUN, and no decision route (see AR-7, AR-18).</li><li>Parts of the diagnostic loop were built before stages 5–7 (documented in `docs/SPEC.md`).</li></ul> |
 
@@ -110,6 +118,9 @@ transaction. Afterwards there were 1 organization, 0 test users and 0 runs.
 | `engine_results.sql` (2026-09-26, after 0015 and 0016) | production DB | PASS 25/25. The first run was FAIL 2/22, which showed the fail-open bug; fixed in 0016 |
 | After 0017: `audit_seal` (audit-v2) 16/16, `run_plan_guard` (with operator) 23/23, `permissions_matrix` 12 × 4 | production DB | all PASS |
 | Secret canary incl. `ENGINE_WRITE_KEY` | local | PASS, 6 canaries, 0 files |
+| Term scan tests (`scripts/term-scan.test.mjs`) | local | 6/6 PASS |
+| Term scan with the real terms | — | NOT RUN (no `TERM_GUARD_KEY` or digests) |
+| Term scan controls on the real build (temporary key) | local | present word → FAIL with the file named; absent term → PASS over build, messages and API |
 | Re-run after 0014: `rls_cross_org` 146, `approval_flow` 11/11, `verification_guard` 5/5, `audit_seal` 16/16, `permissions_matrix` 12 × 4 | production DB | all PASS |
 | Route smoke without a session (`next start`) | local | PASS: all app routes 307 → /login, `/api/health` 200 |
 | Vercel deployment of `fb30398` | GitHub status | success |
@@ -137,7 +148,8 @@ transaction. Afterwards there were 1 organization, 0 test users and 0 runs.
    `buildAuditExport` output (its `AUDIT_FIELDS` and `finalAuditHash`) to the
    export, and extend the snapshot with site, serial number, machine
    configuration, recipe version and operator.
-4. **AR-18: protected-term scan** of `.next` output, `messages/*.json` and API
+4. ~~**AR-18: protected-term scan**~~ Done 2026-09-26 (`docs/TERM_GUARD.md`); a real
+   PASS waits for the key and digests. Original note: of `.next` output, `messages/*.json` and API
    responses, using HMAC digests. It reports NOT RUN without `TERM_GUARD_KEY`
    and terms. The code needs no secret; a real PASS needs the key and terms as
    environment secrets.

@@ -19,9 +19,20 @@ export function contractAuditExport(a: ContractAuditArgs): Record<string, unknow
   return contractBuildAuditExport(a.record, a.preflight, a.processVerification, a.productVerification, a.finalStatus) as unknown as Record<string, unknown>;
 }
 
+function termDigests(): string[] {
+  try {
+    const d: unknown = JSON.parse(process.env.TERM_GUARD_DIGESTS ?? "[]");
+    return Array.isArray(d) ? d.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 function engine() {
-  // Digests are not deployed yet: guard runs fail-closed (free-text codes dropped).
-  const guard = createGuard({ key: process.env.TERM_GUARD_KEY, digests: [] });
+  // Digests come from the server env (TERM_GUARD_DIGESTS, JSON array from
+  // tools/hash-terms.js). Without key or digests the guard fails closed:
+  // free-text codes are dropped.
+  const guard = createGuard({ key: process.env.TERM_GUARD_KEY, digests: termDigests() });
   // adapter.js is plain JS: its inferred options type omits `guard` (no default), so pass a
   // non-literal object to skip the excess-property check without editing the contract.
   const options = { env: process.env, guard };

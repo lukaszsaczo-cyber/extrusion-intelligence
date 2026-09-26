@@ -4,14 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/check-i18n.mjs && next build && node scripts/check-bundle.mjs",
+    "build": "node scripts/check-i18n.mjs && next build && node scripts/check-bundle.mjs && node scripts/term-scan.mjs",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "node --test --experimental-strip-types lib/*/*.test.ts && node --test scripts/*.test.mjs && cd server/engine-contract && node --test",
     "check:i18n": "node scripts/check-i18n.mjs",
     "lint": "eslint .",
     "test:rls": "node scripts/rls-cross-org.mjs",
-    "test:canary": "node scripts/secret-canary.mjs"
+    "test:canary": "node scripts/secret-canary.mjs",
+    "test:terms": "node scripts/term-scan.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
