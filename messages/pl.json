@@ -955,5 +955,24 @@
     },
     "connectAuto": "Połącz automatycznie (niedostępne)",
     "readOnly": "Aplikacja nigdy nie wysyła poleceń do maszyny: tylko odczyt."
+  },
+  "catalog": {
+    "title": "Katalog referencyjny surowców",
+    "note": "Wartości zacytowane z publicznych norm i specyfikacji dostawców, z linkiem do źródła. To specyfikacja, nie pomiar Twojej partii: rzeczywisty skład potwierdza świadectwo partii albo badanie.",
+    "empty": "Katalog jest pusty.",
+    "source": "Źródło",
+    "added": "w Twoich surowcach",
+    "addToMine": "Dodaj do moich surowców",
+    "parameter": "Parametr",
+    "kind": "Rodzaj",
+    "value": "Wartość",
+    "basis": "Podstawa",
+    "method": "Metoda",
+    "retrieved": "Odczytano ze źródła:",
+    "kindValue": {
+      "MIN": "minimum",
+      "MAX": "maksimum",
+      "TYPICAL_RANGE": "typowy zakres"
+    }
   }
 }

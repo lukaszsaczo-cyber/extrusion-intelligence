@@ -955,5 +955,24 @@
     },
     "connectAuto": "Connect automatically (not available)",
     "readOnly": "The app never sends commands to the machine: read only."
+  },
+  "catalog": {
+    "title": "Reference raw-material catalog",
+    "note": "Values quoted from public standards and supplier specifications, with a link to the source. A specification, not a measurement of your lot: the lot certificate or a lab test confirms the real composition.",
+    "empty": "The catalog is empty.",
+    "source": "Source",
+    "added": "in your materials",
+    "addToMine": "Add to my materials",
+    "parameter": "Parameter",
+    "kind": "Kind",
+    "value": "Value",
+    "basis": "Basis",
+    "method": "Method",
+    "retrieved": "Read from the source:",
+    "kindValue": {
+      "MIN": "minimum",
+      "MAX": "maximum",
+      "TYPICAL_RANGE": "typical range"
+    }
   }
 }
