@@ -28,7 +28,7 @@ export function Notice({ text, tone = "muted" }: { text: string; tone?: "muted" 
 
 const FORM_ERRORS = ["invalid", "forbidden", "failed", "duplicate", "notApproved", "locked", "transition", "machine", "time",
   "engineNotConnected", "engineError", "engineKeyMissing", "engineKey", "engineContract", "notCompleted", "stale", "already",
-  "failOrder", "failRef", "failClosed", "failNotFailed", "knowledgeRefused"] as const;
+  "failOrder", "failRef", "failClosed", "failNotFailed", "knowledgeRefused", "failFilter", "failVerify", "failLocked"] as const;
 
 // Maps the ?e= code set by server actions to an i18n key, or null.
 export function formErrorKey(e: string | undefined): string | null {

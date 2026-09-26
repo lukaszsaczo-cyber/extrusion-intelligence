@@ -1,6 +1,6 @@
 // JSON export of one audit record. Only allowlisted fields leave the app: the
-// allowlist mirrors the audit-v2 snapshot built by seal_run_audit (0017; audit-v1
-// from 0013 is a subset). Any
+// allowlist mirrors the audit-v3 snapshot built by seal_run_audit (0019; audit-v1
+// from 0013 and audit-v2 from 0017 are subsets). Any
 // field not listed (for example one added later, or a private engine field) is
 // dropped, never passed through. Objects and arrays are exported only where the
 // allowlist describes their shape, so a whole subtree can never slip out under
@@ -45,6 +45,13 @@ export const AUDIT_SNAPSHOT_ALLOWLIST = {
   predictions: [{ metric: true, kind: true, value: true, min_value: true, max_value: true, unit: true, created_at: true }],
   measurements: [{ sample_code: true, taken_at: true, parameter: true, value: true, unit: true, method: true, ...WHO_WHEN }],
   verifications: [{ id: true, kind: true, state: true, evidence_saved: true, verified_at: true, ...WHO_WHEN }],
+  // audit-v3 (0019): FAIL-loop cases in which the run failed or was the controlled test
+  fail_cases: [{
+    id: true, run_id: true, trigger_verification_id: true, status: true, outcome: true, outcome_evidence_saved: true,
+    locked_at: true, ...WHO_WHEN,
+    steps: [{ seq: true, step: true, ref_id: true, ...WHO_WHEN }],
+    knowledge: { id: true, ...WHO_WHEN },
+  }],
 } as const satisfies Spec;
 
 const isScalar = (v: unknown) => v === null || ["string", "number", "boolean"].includes(typeof v);

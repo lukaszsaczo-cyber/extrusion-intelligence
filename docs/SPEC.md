@@ -24,7 +24,7 @@ stage gate was run with PASS evidence. Stage gates are still open.
 | # | Scope | State in repo | Missing |
 |---|---|---|---|
 | 1 | Next.js, TS strict, ESLint, PL/EN, layout, Auth | **Gate PASS** (0b2225b): ESLint with a client/server boundary rule proven by 7 tests; tsc, lint, tests, i18n 312/312, build, Vercel deploy | — |
-| 2 | Migrations, tables, indexes, RLS | Schema live. Migrations 0006–0018 are in the repo. **Cross-org RLS test PASS** on production 2026-09-26: 31 tables, 161 checks, 0 failures; negative control DETECTS_LEAK; nothing left behind (`supabase/tests/`, `npm run test:rls`) | 0001–0005 are not in the repo (applied earlier) |
+| 2 | Migrations, tables, indexes, RLS | Schema live. Migrations 0006–0020 are in the repo. **Cross-org RLS test PASS** on production 2026-09-26: 31 tables, 161 checks, 0 failures; negative control DETECTS_LEAK; nothing left behind (`supabase/tests/`, `npm run test:rls`) | 0001–0005 are not in the repo (applied earlier) |
 | 3 | engine-contract, TS wrapper, API routes | `server/engine-contract`, `server/engine.ts` (server-only), `api/health`. **Secret canary test PASS** 2026-09-25: 5 canaries, 0 of 48 files in `.next/static` (`npm run test:canary`) | Term guard reads `TERM_GUARD_DIGESTS`, and the term scan runs in the build (`docs/TERM_GUARD.md`). The real terms are NOT RUN until the key and digests are set. The decision path exists (`docs/ENGINE_CONNECTION.md`) |
 | 4 | Dashboard, Machines, Machine Console | Dashboard: machines, runs, active runs, audit count, recent decisions / verifications / runs, alerts NOT AVAILABLE (no alert source). Machines: list, signal dictionary, tag mapping, console link. Machine Console: configuration, recorded state, parameters, limits (add CATALOG / CONFIRMED_ON_MACHINE), tags, history with imported file name and time; LIVE VIEW always NOT AVAILABLE (`lib/console/state.ts`, tested) | Logged-in rendering not verified end-to-end (no test login); no live source in V1 by design |
 | 5 | Wizard, Preflight, Approval | Wizard (product target → FINAL recipe version → machine → configuration → plan), recipe versions/components/finalize, product targets and values. Preflight = app known-constraints check PASS/FAIL/NEEDS DATA (`lib/preflight/known-limits.ts`, 9 tests), shown apart from the engine decision (NOT AVAILABLE while disconnected, per contract `status = null`). Approval only via `approve_process_plan`. DB approval-flow test PASS 11/11 (`supabase/tests/approval_flow.sql`) | Engine decision not written anywhere yet (needs engine + server-side persistence); logged-in rendering not verified end-to-end |
@@ -86,11 +86,11 @@ The extension starts from VERIFICATION:
 | 6: quarantine with reasons, append-only raw data | Done (0006, 0008, 0010, 0012; `lib/quality/rules.ts`) |
 | State refresh (snapshot + SHA-256) | Done (0011, `server/diagnosis.ts`) |
 | Diagnosis gates, INSUFFICIENT_DATA / INCONCLUSIVE | Done as gates-v0. Three gates always UNKNOWN until their inputs exist |
-| ROZPAD I, 3, 28 as explicit steps | v0 (0018, `docs/FAIL_LOOP.md`): append-only steps with checked references; content to confirm |
+| FAIL loop, order A: ROZPAD I → diagnosis → 3 → 6 → 28 → refresh → repair → test → verification → report | Done (0019, 0020, `docs/FAIL_LOOP.md`): append-only steps with checked references; 6 is a recorded exclusion, never a delete |
 | Cause model (DIAGNOSED) | Trusted role (engine) only since 0018; no engine endpoint yet, so no loop reaches repair today |
-| Repair / intervention, controlled test | Done (0018): new plan with changes and rationale; completed run on it (approval chain from 0014) |
+| Repair / intervention, controlled test | Done (0019): new plan with changes and rationale; completed run on it (approval chain from 0014) |
 | Verification writes (`verifications` table) | `record_engine_verification` (0015), with the engine write key only; not yet run against a live engine |
-| Knowledge store 38 → 39 → 40 → CROSS with the "verified PASS only" rule | Done (0018): trigger-enforced, append-only, in order; content of the stages to confirm |
+| 38 FILTR → 39 VERIFY + PERSIST → 40 LOCK → CROSS → AUDIT, "verified PASS only" | Done (0019): knowledge = what passed 38, re-checked at 39; 40 = verified PASS with evidence (no numeric threshold), case read-only; seal audit-v3 contains the case. Canon B (CZARNA WODA, KHRR) not defined |
 
 ### Deliberately outside this spec until the data audit
 

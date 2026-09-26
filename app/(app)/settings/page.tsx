@@ -88,7 +88,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           [t("settings.rulesetParams"), <span key="p" className="num">
             {`minValidSamples=${RULESET_V0.minValidSamples}, gapFactor=${RULESET_V0.gapFactor}, minCoverage=${RULESET_V0.minCoverage}`}</span>],
           [t("settings.gates"), <span key="g" className="num">{`${GATES_VERSION}, MIN_CLEAN_SAMPLES=${MIN_CLEAN_SAMPLES}`}</span>],
-          [t("settings.auditFormat"), <span key="a" className="num">audit-v1 · SHA-256</span>],
+          [t("settings.auditFormat"), <span key="a" className="num">audit-v3 · SHA-256</span>],
         ]} />
         <Notice text={t("settings.configurationHint")} />
       </Panel>

@@ -60,13 +60,14 @@ test("null stays null (a run without a plan exports plan: null), integrity null 
   assert.equal(out.integrity, null);
 });
 
-test("allowlist covers exactly the keys seal_run_audit builds (migration 0017, audit-v2)", () => {
+test("allowlist covers exactly the keys seal_run_audit builds (migration 0019, audit-v3)", () => {
   const dir = new URL("../../supabase/migrations/", import.meta.url);
-  const sql = readFileSync(new URL("20260926004456_0017_audit_v2_and_run_operator.sql", dir), "utf8");
-  const body = sql.slice(sql.indexOf("v_snap := jsonb_build_object("), sql.indexOf("insert into public.audit_records"));
+  const sql = readFileSync(new URL("20260926091246_0019_fail_loop_order_a.sql", dir), "utf8");
+  const seal = sql.slice(sql.indexOf("create or replace function public.seal_run_audit"));
+  const body = seal.slice(seal.indexOf("v_snap := jsonb_build_object("), seal.indexOf("insert into public.audit_records"));
   // keys are the quoted literals followed by a comma inside jsonb_build_object(...)
   const keys = new Set([...body.matchAll(/'([a-z_0-9]+)',\s/g)].map((m) => m[1]!));
-  keys.delete("audit-v2"); // value, not a key
+  keys.delete("audit-v3"); // value, not a key
   const specKeys = new Set<string>();
   const walk = (s: unknown) => {
     if (Array.isArray(s)) return walk(s[0]);

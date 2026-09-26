@@ -43,6 +43,8 @@ unit tests and database tests.
 - Seals are `audit-v2` (0017): they add organization, site, machine with its
   configuration, and recipe version.
 - The run's operator is now recorded: the user who starts it.
+- Later (0019) seals are `audit-v3`: they also include the FAIL-loop cases of
+  the run, with their steps (`docs/FAIL_LOOP.md`).
 
 **Update 2026-09-26 (fix 2).** Migrations 0015 and 0016 and the engine
 actions give the engine's decision and verification a write path.
@@ -117,6 +119,7 @@ transaction. Afterwards there were 1 organization, 0 test users and 0 runs.
 | `run_plan_guard.sql` (2026-09-26, after 0014) | production DB | PASS 20/20 |
 | `engine_results.sql` (2026-09-26, after 0015 and 0016) | production DB | PASS 25/25. The first run was FAIL 2/22, which showed the fail-open bug; fixed in 0016 |
 | After 0017: `audit_seal` (audit-v2) 16/16, `run_plan_guard` (with operator) 23/23, `permissions_matrix` 12 × 4 | production DB | all PASS |
+| After 0019/0020 (FAIL loop order A): `fail_loop` 37/37, `rls_cross_org` 31 tables / 161 checks, `audit_seal` (audit-v3) 16/16, `permissions_matrix` 13 × 4 | production DB | all PASS. The first `fail_loop` run found a type error in step 39; fixed in 0020 |
 | Secret canary incl. `ENGINE_WRITE_KEY` | local | PASS, 6 canaries, 0 files |
 | Term scan tests (`scripts/term-scan.test.mjs`) | local | 6/6 PASS |
 | Term scan with the real terms | — | NOT RUN (no `TERM_GUARD_KEY` or digests) |

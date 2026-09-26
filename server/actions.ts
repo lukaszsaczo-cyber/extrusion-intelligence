@@ -7,6 +7,7 @@ import { createSupabaseServer } from "@/lib/supabase/server";
 import { LOCALE_COOKIE, isLocale } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
 import { parseInstant } from "@/lib/runs/instant";
+import { STEPS } from "@/lib/fail-loop/steps";
 import { buildPreflightRequest, toDecisionWrite, toVerificationWrite } from "@/lib/engine/results";
 import { analyzePreflight, engineConfigured, engineWriteKey, verifyRun } from "@/server/engine";
 
@@ -495,12 +496,13 @@ export async function requestEngineVerification(formData: FormData) {
   redirect(back);
 }
 
-// ---- FAIL loop (0018): every write goes through a database function that
+// ---- FAIL loop, order A (0019): every write goes through a database function that
 // checks role, order and references; the app only passes the user's choices.
 
 const FAIL_ERRORS: [string, string][] = [
   ["fail_order", "failOrder"], ["fail_ref", "failRef"], ["fail_payload", "invalid"], ["fail_closed", "failClosed"],
-  ["fail_not_failed", "failNotFailed"], ["knowledge_refused", "knowledgeRefused"], ["knowledge_order", "failOrder"],
+  ["fail_not_failed", "failNotFailed"], ["knowledge_refused", "knowledgeRefused"], ["fail_filter", "failFilter"],
+  ["fail_verify", "failVerify"], ["fail_locked", "failLocked"],
   ["engine_run_not_completed", "notCompleted"],
 ];
 const failErrorCode = (error: { code?: string; message?: string }) =>
@@ -530,7 +532,7 @@ export async function openFailCase(formData: FormData) {
 
 const StepInput = z.object({
   case_id: uuid,
-  step: z.enum(["SEPARATION", "QUARANTINE", "CONSOLIDATION", "STATE_REFRESH", "DIAGNOSIS", "INTERVENTION", "CONTROLLED_TEST", "VERIFICATION"]),
+  step: z.enum(STEPS).exclude(["DECOMPOSITION"]),
   ref_id: optUuid,
   note: z.string().trim().max(2000).default(""),
 });
@@ -544,7 +546,6 @@ export async function recordFailStep(formData: FormData) {
   const back = `/fail-cases/${p.data.case_id}`;
   const payload: Record<string, unknown> = {};
   if (p.data.note) payload.note = p.data.note;
-  if (p.data.step === "SEPARATION") payload.in_scope = formData.getAll("in_scope").map(String).filter(Boolean);
   if (p.data.step === "INTERVENTION") {
     const num = (v: FormDataEntryValue | null) => { const s = String(v ?? "").trim(); return s !== "" && Number.isFinite(Number(s)) ? Number(s) : s; };
     payload.changes = [0, 1, 2].map((i) => ({
@@ -571,18 +572,6 @@ export async function closeFailCase(formData: FormData) {
   const back = `/fail-cases/${p.data.case_id}`;
   const supabase = await createSupabaseServer();
   const { error } = await supabase.rpc("close_fail_case", { p_case: p.data.case_id, p_note: p.data.note });
-  if (error) redirect(`${back}?e=${failErrorCode(error)}`);
-  revalidatePath(back);
-  redirect(back);
-}
-
-export async function addKnowledge(formData: FormData) {
-  const p = z.object({ case_id: uuid, stage: z.enum(["S38", "S39", "S40", "CROSS"]), statement: z.string().trim().min(1).max(4000) })
-    .safeParse(fields(formData, ["case_id", "stage", "statement"]));
-  if (!p.success) redirect("/fail-cases?e=invalid");
-  const back = `/fail-cases/${p.data.case_id}`;
-  const supabase = await createSupabaseServer();
-  const { error } = await supabase.rpc("add_knowledge", { p_case: p.data.case_id, p_stage: p.data.stage, p_statement: p.data.statement });
   if (error) redirect(`${back}?e=${failErrorCode(error)}`);
   revalidatePath(back);
   redirect(back);
