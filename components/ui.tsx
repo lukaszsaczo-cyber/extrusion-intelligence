@@ -1,4 +1,5 @@
 // Small shared building blocks for the data sections. Server components only.
+import { SubmitButton } from "@/components/submit-button";
 
 export function PageHeader({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
@@ -92,7 +93,7 @@ export function FormGrid({ action, submit, children }: {
     <form action={action} className="grid gap-3 px-4 py-4 sm:grid-cols-2 lg:grid-cols-3">
       {children}
       <div className="flex items-end">
-        <button className="rounded bg-teal px-3 py-2 text-sm font-medium text-ground">{submit}</button>
+        <SubmitButton label={submit} />
       </div>
     </form>
   );

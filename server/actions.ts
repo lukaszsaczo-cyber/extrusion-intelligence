@@ -9,6 +9,7 @@ import { getSessionContext } from "@/server/context";
 import { parseInstant } from "@/lib/runs/instant";
 import { STEPS } from "@/lib/fail-loop/steps";
 import { logServerError } from "@/lib/log/server-error";
+import { parseMainIngredients } from "@/lib/materials/protein-catalog";
 import { buildPreflightRequest, toDecisionWrite, toVerificationWrite } from "@/lib/engine/results";
 import { analyzePreflight, engineConfigured, engineWriteKey, verifyRun } from "@/server/engine";
 
@@ -82,7 +83,7 @@ async function insertForOrg(path: string, table: string, row: Record<string, unk
     redirect(`${path}?e=${errorCode(error)}`);
   }
   revalidatePath(path);
-  redirect(path);
+  redirect(`${path}?ok=1`);
 }
 
 const SiteInput = z.object({ name: text(), timezone: optText(64) });
@@ -259,7 +260,9 @@ const TargetInput = z.object({ name: text(), product_type: optText(), shape: opt
 
 export async function createProductTarget(formData: FormData) {
   const p = TargetInput.safeParse(fields(formData, Object.keys(TargetInput.shape)));
-  await insertForOrg("/new-product", "product_targets", p.success ? p.data : null);
+  // Declared main ingredients: checked catalog codes plus free text (0022).
+  const ingredients = parseMainIngredients(formData.getAll("main_ingredient").map(String), String(formData.get("other_ingredients") ?? ""));
+  await insertForOrg("/new-product", "product_targets", p.success && ingredients ? { ...p.data, main_ingredients: ingredients } : null);
 }
 
 const TargetValueInput = z.object({

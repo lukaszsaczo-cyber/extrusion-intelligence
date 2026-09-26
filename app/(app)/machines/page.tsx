@@ -68,7 +68,10 @@ export default async function MachinesPage({ searchParams }: { searchParams: Pro
       <Panel title={t("machines.add")}>
         {errorKey && <Notice tone="stop" text={t(errorKey)} />}
         {!canEdit ? <Notice text={t("form.readOnly")} />
-          : sites.length === 0 ? <Notice text={t("machines.noSites")} />
+          : sites.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-muted">{t("machines.noSites")}{" "}
+              <Link href="/settings" className="text-teal hover:underline">{t("setup.todo")}</Link></p>
+          )
           : (
             <FormGrid action={createMachine} submit={t("form.add")}>
               <Select label={t("machines.site")} name="site_id" required

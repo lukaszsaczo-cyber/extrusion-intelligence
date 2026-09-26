@@ -153,7 +153,8 @@
   "form": {
     "add": "Dodaj",
     "save": "Zapisz",
-    "readOnly": "Twoja rola pozwala przeglądać te dane, ale nie zmieniać."
+    "readOnly": "Twoja rola pozwala przeglądać te dane, ale nie zmieniać.",
+    "saved": "Zapisano. Wpis jest na liście powyżej."
   },
   "machines": {
     "title": "Maszyny",
@@ -568,7 +569,10 @@
     "type": "Typ produktu",
     "shape": "Kształt",
     "addValue": "Dodaj wartość docelową",
-    "valueHint": "Podaj co najmniej jedną z wartości: min, cel lub max."
+    "valueHint": "Podaj co najmniej jedną z wartości: min, cel lub max.",
+    "mainIngredients": "Główne składniki",
+    "otherIngredients": "Inne składniki (oddziel przecinkiem)",
+    "ingredientsNote": "Oznaczenia handlowe (np. WPC 80); liczba to nominalna zawartość białka z nazwy, nie pomiar. Rzeczywisty skład pochodzi ze specyfikacji dostawcy lub badania partii."
   },
   "preflight": {
     "title": "Preflight",
@@ -920,5 +924,15 @@
     "auditRecord": "rekord audytu",
     "gatePassed": "przeszło do 39",
     "gateClosed": "zatrzymane: to nie jest zweryfikowany PASS z dowodem; sprawa zamknięta, nigdy wiedza"
+  },
+  "setup": {
+    "title": "Co jest potrzebne do planu procesu",
+    "done": "gotowe",
+    "todo": "Uzupełnij",
+    "product": "Produkt (cel i wartości)",
+    "site": "Lokalizacja (Ustawienia)",
+    "machine": "Maszyna",
+    "material": "Surowce",
+    "recipe": "Receptura (wersja zatwierdzona)"
   }
 }

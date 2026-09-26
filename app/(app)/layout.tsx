@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getT } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
@@ -6,6 +7,7 @@ import { signOut } from "@/server/actions";
 import { Sidebar } from "@/components/sidebar";
 import { NAV } from "@/lib/nav";
 import { LangSwitch } from "@/components/lang-switch";
+import { SavedNotice } from "@/components/saved-notice";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getSessionContext();
@@ -39,7 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <form action={signOut}><button className="text-muted hover:text-ink">{t("top.signOut")}</button></form>
           </span>
         </header>
-        <main className="px-6 py-6">{children}</main>
+        <main className="px-6 py-6"><Suspense fallback={null}><SavedNotice text={t("form.saved")} /></Suspense>{children}</main>
       </div>
     </div>
   );

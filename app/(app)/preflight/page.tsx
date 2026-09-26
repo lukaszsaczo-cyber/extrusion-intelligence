@@ -5,6 +5,10 @@ import { getSessionContext } from "@/server/context";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { createProcessPlan } from "@/server/actions";
 import { DataTable, Empty, Field, Notice, PageHeader, Panel, Select, formErrorKey } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
+import { SetupSteps } from "@/components/setup-steps";
+import { nextSetupStep, setupSteps } from "@/lib/wizard/steps";
+import { setupCounts } from "@/server/setup";
 
 type Plan = { id: string; version: number; machine_id: string; recipe_version_id: string; preflight_status: string | null; approved_at: string | null; created_at: string };
 type Machine = { id: string; manufacturer: string | null; model: string | null; serial_number: string | null };
@@ -20,13 +24,14 @@ export default async function PreflightIndex({ searchParams }: { searchParams: P
   const orgId = ctx.current.organizationId;
   const errorKey = formErrorKey((await searchParams).e);
   const supabase = await createSupabaseServer();
-  const [plansRes, machinesRes, versionsRes, recipesRes, targetsRes] = await Promise.all([
+  const [plansRes, machinesRes, versionsRes, recipesRes, targetsRes, counts] = await Promise.all([
     supabase.from("process_plans").select("id, version, machine_id, recipe_version_id, preflight_status, approved_at, created_at")
       .eq("organization_id", orgId).order("created_at", { ascending: false }).limit(50),
     supabase.from("machines").select("id, manufacturer, model, serial_number").eq("organization_id", orgId),
     supabase.from("recipe_versions").select("id, version, status, recipe_id").eq("organization_id", orgId),
     supabase.from("recipes").select("id, name").eq("organization_id", orgId),
     supabase.from("product_targets").select("id, name").eq("organization_id", orgId),
+    setupCounts(supabase, orgId),
   ]);
   const plans = (plansRes.data ?? []) as Plan[];
   const machines = (machinesRes.data ?? []) as Machine[];
@@ -53,6 +58,10 @@ export default async function PreflightIndex({ searchParams }: { searchParams: P
     <div className="space-y-6">
       <PageHeader title={t("preflight.title")} />
       <p className="text-sm text-muted">{t("preflight.intro")}</p>
+      {nextSetupStep(counts) && (
+        <SetupSteps steps={setupSteps(counts)} title={t("setup.title")} doneLabel={t("setup.done")} todoLabel={t("setup.todo")}
+          labels={{ product: t("setup.product"), site: t("setup.site"), machine: t("setup.machine"), material: t("setup.material"), recipe: t("setup.recipe") }} />
+      )}
 
       <Panel title={t("preflight.plans")}>
         {plans.length === 0 ? <Empty text={t("preflight.noPlans")} /> : (
@@ -101,7 +110,7 @@ export default async function PreflightIndex({ searchParams }: { searchParams: P
               </>))}
               <div className="border-t border-line px-4 py-4">
                 <p className="mb-3 text-sm text-muted">{t("common.plcNotice")}</p>
-                <button className="rounded bg-teal px-3 py-2 text-sm font-medium text-ground">{t("preflight.create")}</button>
+                <SubmitButton label={t("preflight.create")} />
               </div>
             </form>
           )}

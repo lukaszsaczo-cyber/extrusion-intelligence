@@ -153,7 +153,8 @@
   "form": {
     "add": "Add",
     "save": "Save",
-    "readOnly": "Your role can view this data but not change it."
+    "readOnly": "Your role can view this data but not change it.",
+    "saved": "Saved. The entry is in the list above."
   },
   "machines": {
     "title": "Machines",
@@ -568,7 +569,10 @@
     "type": "Product type",
     "shape": "Shape",
     "addValue": "Add target value",
-    "valueHint": "Enter at least one of: min, target or max."
+    "valueHint": "Enter at least one of: min, target or max.",
+    "mainIngredients": "Main ingredients",
+    "otherIngredients": "Other ingredients (comma separated)",
+    "ingredientsNote": "Trade designations (e.g. WPC 80); the number is the nominal protein content from the name, not a measurement. Real composition comes from the supplier specification or a lot test."
   },
   "preflight": {
     "title": "Preflight",
@@ -920,5 +924,15 @@
     "auditRecord": "audit record",
     "gatePassed": "passed to 39",
     "gateClosed": "stopped: not a verified PASS with evidence; case closed, never knowledge"
+  },
+  "setup": {
+    "title": "What a process plan needs",
+    "done": "done",
+    "todo": "Add",
+    "product": "Product (target and values)",
+    "site": "Site (Settings)",
+    "machine": "Machine",
+    "material": "Materials",
+    "recipe": "Recipe (approved version)"
   }
 }
