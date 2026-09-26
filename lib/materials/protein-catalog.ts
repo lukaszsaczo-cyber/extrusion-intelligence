@@ -1,4 +1,4 @@
-// Common protein ingredients for extruded protein products, by their trade
+// Common protein and dairy ingredients for extruded products, by their trade
 // designation. The number is the nominal protein content (% of dry matter) as
 // the designation is used in trade; it is not a measurement and is never used
 // as a composition value. Real values come from the supplier's specification
@@ -12,8 +12,14 @@ export const PROTEIN_CATALOG: readonly CatalogItem[] = [
   { code: "WPI 90", pl: "Izolat białek serwatkowych 90", en: "Whey protein isolate 90" },
   { code: "MPC 70", pl: "Koncentrat białek mleka 70", en: "Milk protein concentrate 70" },
   { code: "MPC 85", pl: "Koncentrat białek mleka 85", en: "Milk protein concentrate 85" },
+  { code: "MPC 80", pl: "Koncentrat białek mleka 80", en: "Milk protein concentrate 80" },
+  { code: "MPI", pl: "Izolat białek mleka", en: "Milk protein isolate" },
   { code: "MCI", pl: "Izolat kazeiny micelarnej", en: "Micellar casein isolate" },
   { code: "Caseinate", pl: "Kazeinian", en: "Caseinate" },
+  { code: "Acid casein", pl: "Kazeina kwasowa", en: "Acid casein" },
+  { code: "SMP", pl: "Mleko odtłuszczone w proszku", en: "Skim milk powder" },
+  { code: "WMP", pl: "Mleko pełne w proszku", en: "Whole milk powder" },
+  { code: "Sweet whey powder", pl: "Serwatka słodka w proszku", en: "Sweet whey powder" },
   { code: "SPI 90", pl: "Izolat białka sojowego 90", en: "Soy protein isolate 90" },
   { code: "SPC 70", pl: "Koncentrat białka sojowego 70", en: "Soy protein concentrate 70" },
   { code: "PPI 80", pl: "Izolat białka grochu 80", en: "Pea protein isolate 80" },
