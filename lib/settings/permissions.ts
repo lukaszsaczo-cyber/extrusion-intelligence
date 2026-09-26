@@ -18,6 +18,7 @@ export const PERMISSIONS = {
   approve_plan: ["ADMIN", "ENGINEER", "OPERATOR"],
   quality_and_diagnosis: ["ADMIN", "ENGINEER"],
   seal_audit: ["ADMIN", "ENGINEER"],
+  fail_loop: ["ADMIN", "ENGINEER"],
   engine_results: [],
 } as const satisfies Record<string, readonly Role[]>;
 

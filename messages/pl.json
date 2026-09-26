@@ -30,7 +30,8 @@
     "materials": "Surowce",
     "history": "Historia",
     "audit": "Audyt",
-    "settings": "Ustawienia"
+    "settings": "Ustawienia",
+    "fail-cases": "Pętla FAIL"
   },
   "top": {
     "organization": "Organizacja",
@@ -140,7 +141,12 @@
     "engineContract": "Odpowiedź była poza kontraktem silnika i została odrzucona. Nic nie zapisano.",
     "stale": "Plan zmienił się, gdy silnik podejmował decyzję. Zapytaj ponownie.",
     "notCompleted": "Przebieg weryfikuje się dopiero po zakończeniu.",
-    "already": "Już wykonane: plan jest już zatwierdzony."
+    "already": "Już wykonane: plan jest już zatwierdzony.",
+    "failOrder": "Ten krok nie może być teraz (kolejność pętli FAIL albo diagnoza bez nazwanej przyczyny).",
+    "failRef": "Wybrany rekord nie pasuje do tego kroku.",
+    "failClosed": "Sprawa jest zamknięta.",
+    "failNotFailed": "Pętla FAIL zaczyna się tylko od VERIFIED_FAIL.",
+    "knowledgeRefused": "Wiedzą może zostać tylko pętla zamknięta zweryfikowanym PASS z zapisanym dowodem."
   },
   "form": {
     "add": "Dodaj",
@@ -247,7 +253,8 @@
       "approve_plan": "Zatwierdzenie planu (wymaga decyzji silnika)",
       "quality_and_diagnosis": "Jakość danych i diagnoza",
       "seal_audit": "Pieczęć audytu",
-      "engine_results": "Decyzje, predykcje, weryfikacje (tylko silnik)"
+      "engine_results": "Decyzje, predykcje, weryfikacje (tylko silnik)",
+      "fail_loop": "Pętla FAIL i weryfikacja produktu"
     },
     "configuration": "Konfiguracja",
     "engine": "Silnik",
@@ -723,7 +730,9 @@
     "final": "Stan ostateczny: przebiegu nie można już zmienić.",
     "timeOptional": "Czas z przesunięciem strefy, puste = teraz",
     "askVerification": "Poproś silnik o weryfikację przebiegu",
-    "verificationEngineOff": "Weryfikacja przez silnik niedostępna: silnik nie jest podłączony."
+    "verificationEngineOff": "Weryfikacja przez silnik niedostępna: silnik nie jest podłączony.",
+    "recordProductVerification": "Zapisz weryfikację produktu",
+    "productVerificationHint": "Baza porównuje zapisane pomiary z celami produktu planu (te same reguły co kontrola produktu powyżej) i zapisuje wynik."
   },
   "history": {
     "title": "Historia",
@@ -814,5 +823,76 @@
     "machine": "Maszyna",
     "serial": "nr seryjny",
     "recipeVersion": "Wersja receptury"
+  },
+  "failLoop": {
+    "title": "Pętla FAIL",
+    "hint": "Zaczyna się od VERIFIED_FAIL. Każdy krok to niezmienny zapis wskazujący na prawdziwe dowody; kolejności pilnuje baza. Treść kroków to interpretacja v0 (docs/FAIL_LOOP.md).",
+    "cases": "Sprawy",
+    "noCases": "Brak spraw FAIL.",
+    "opened": "Otwarto",
+    "status": "Status",
+    "lastStep": "Ostatni krok",
+    "outcome": "Wynik",
+    "closedWithout": "zamknięta bez weryfikacji",
+    "caseStatus": {
+      "OPEN": "otwarta",
+      "CLOSED": "zamknięta"
+    },
+    "case": "Sprawa FAIL",
+    "summary": "Sprawa",
+    "rule": "Naprawa zakończona FAIL, INCONCLUSIVE lub INCOMPLETE zostaje tu zapisana, ale nigdy nie staje się wiedzą.",
+    "steps": "Kroki",
+    "stepCol": "Krok",
+    "content": "Treść",
+    "next": "Następny krok",
+    "noNext": "Żaden krok nie może nastąpić (np. diagnoza bez statusu).",
+    "noItems": "Weryfikacja FAIL nie ma szczegółów pozycji, więc nie ma czego oddzielić. Zamknij sprawę z podaniem powodu.",
+    "noOptions": "Brak jeszcze pasującego rekordu.",
+    "create": "Utwórz",
+    "reference": "Rekord",
+    "parameter": "Parametr",
+    "from": "Z",
+    "to": "Na",
+    "unit": "Jednostka",
+    "rationale": "Uzasadnienie (wymagane)",
+    "noteOptional": "Notatka (opcjonalnie)",
+    "record": "Zapisz krok",
+    "closeReason": "Zamknij bez weryfikacji: powód (zostaje zapisane, nigdy wiedza)",
+    "close": "Zamknij sprawę",
+    "knowledge": "Wiedza 38 → 39 → 40 → CROSS",
+    "knowledgeRule": "Tylko po zweryfikowanym PASS z zapisanym dowodem; etapy po kolei, każdy raz, bez zmian.",
+    "noKnowledge": "Brak zapisanej wiedzy.",
+    "stage": "Etap",
+    "statement": "Stwierdzenie",
+    "addKnowledge": "Zapisz etap",
+    "open": "Otwórz pętlę FAIL",
+    "inScope": "w zakresie",
+    "outOfScope": "poza zakresem",
+    "quarantined": "w kwarantannie",
+    "measurements": "pomiarów",
+    "files": "plików",
+    "note": "notatka",
+    "step": {
+      "DECOMPOSITION": "Rozpad",
+      "SEPARATION": "Oddzielenie",
+      "QUARANTINE": "Kwarantanna / czyszczenie",
+      "CONSOLIDATION": "Konsolidacja",
+      "STATE_REFRESH": "Odświeżenie stanu",
+      "DIAGNOSIS": "Diagnoza",
+      "INTERVENTION": "Naprawa / oddziaływanie",
+      "CONTROLLED_TEST": "Test kontrolowany",
+      "VERIFICATION": "Weryfikacja"
+    },
+    "stepHint": {
+      "DECOMPOSITION": "Zapisane automatycznie z weryfikacji FAIL.",
+      "SEPARATION": "Wybierz niezaliczone pozycje, którymi zajmuje się ta pętla; reszta zostaje zapisana jako poza zakresem.",
+      "QUARANTINE": "Wybierz ocenę jakości danych nieudanego przebiegu wykonaną po poprzednim kroku (najpierw uruchom ją na stronie jakości).",
+      "CONSOLIDATION": "Baza łączy weryfikację, ocenę, zakres, pomiary i pliki w jeden zapis.",
+      "STATE_REFRESH": "Wybierz migawkę stanu zbudowaną z oceny z kroku kwarantanny.",
+      "DIAGNOSIS": "Wybierz diagnozę tej migawki. Bez nazwanej przyczyny (DIAGNOSED, tylko silnik) pętla wraca do kwarantanny z nowymi danymi.",
+      "INTERVENTION": "Wybierz nowy plan dla tej samej maszyny, utworzony po otwarciu sprawy, i opisz zmiany oraz uzasadnienie.",
+      "CONTROLLED_TEST": "Wybierz zakończony przebieg na planie naprawy. Jego start wymagał zatwierdzonej decyzji (reguła bazy).",
+      "VERIFICATION": "Wybierz weryfikację przebiegu testowego. Zamyka ona sprawę; wiedzą może zostać tylko zweryfikowany PASS z zapisanym dowodem."
+    }
   }
 }

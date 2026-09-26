@@ -26,7 +26,7 @@ declare
   refs jsonb := '{}'::jsonb;
   v_site uuid; v_machine uuid; v_mat uuid; v_lot uuid; v_recipe uuid; v_rv uuid;
   v_target uuid; v_plan uuid; v_run uuid; v_file uuid; v_metric uuid; v_sample uuid;
-  v_qa uuid; v_snap uuid;
+  v_qa uuid; v_snap uuid; v_ver uuid; v_case uuid;
   t text;
   n bigint;
   own bigint;
@@ -86,7 +86,12 @@ begin
       values (o, v_run, v_qa, 'v1', '{}'::jsonb, hash64) returning id into v_snap;
     insert into public.diagnoses (organization_id, run_id, snapshot_id, gates_version, status, gates)
       values (o, v_run, v_snap, 'gates-v0', 'INSUFFICIENT_DATA', '[{"id":"DATA_TRUSTED"}]'::jsonb);
-    insert into public.verifications (organization_id, run_id, kind, state) values (o, v_run, 'PROCESS', 'INCOMPLETE');
+    insert into public.verifications (organization_id, run_id, kind, state) values (o, v_run, 'PROCESS', 'INCOMPLETE') returning id into v_ver;
+    -- FAIL loop tables (0018); seeded directly as owner, closed with a verified PASS so knowledge is allowed
+    insert into public.fail_cases (organization_id, run_id, trigger_verification_id, status, outcome, outcome_evidence_saved, closed_at)
+      values (o, v_run, v_ver, 'CLOSED', 'VERIFIED_PASS', true, now()) returning id into v_case;
+    insert into public.fail_case_steps (organization_id, case_id, seq, step, ref_id) values (o, v_case, 1, 'DECOMPOSITION', v_ver);
+    insert into public.knowledge_entries (organization_id, case_id, stage, statement) values (o, v_case, 'S38', 'seed');
     insert into public.audit_records (organization_id, run_id, snapshot, final_hash) values (o, v_run, '{}'::jsonb, hash64);
     refs := refs || jsonb_build_object(o::text, jsonb_build_object('machine', v_machine, 'plan', v_plan, 'run', v_run));
   end loop;

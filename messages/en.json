@@ -30,7 +30,8 @@
     "materials": "Materials",
     "history": "History",
     "audit": "Audit",
-    "settings": "Settings"
+    "settings": "Settings",
+    "fail-cases": "FAIL loop"
   },
   "top": {
     "organization": "Organization",
@@ -140,7 +141,12 @@
     "engineContract": "The answer was outside the engine contract and was refused. Nothing was stored.",
     "stale": "The plan changed while the engine was deciding. Ask again.",
     "notCompleted": "A run is verified only after it is completed.",
-    "already": "Already done: the plan is already approved."
+    "already": "Already done: the plan is already approved.",
+    "failOrder": "This step cannot come now (FAIL loop order, or the diagnosis has no named cause).",
+    "failRef": "The selected record does not belong to this step.",
+    "failClosed": "The case is closed.",
+    "failNotFailed": "The FAIL loop starts only from a VERIFIED_FAIL.",
+    "knowledgeRefused": "Only a loop closed with a verified PASS and saved evidence becomes knowledge."
   },
   "form": {
     "add": "Add",
@@ -247,7 +253,8 @@
       "approve_plan": "Approve a plan (needs an engine decision)",
       "quality_and_diagnosis": "Data quality and diagnosis",
       "seal_audit": "Seal audit",
-      "engine_results": "Decisions, predictions, verifications (engine only)"
+      "engine_results": "Decisions, predictions, verifications (engine only)",
+      "fail_loop": "FAIL loop and product verification"
     },
     "configuration": "Configuration",
     "engine": "Engine",
@@ -723,7 +730,9 @@
     "final": "Final state: the run can no longer be changed.",
     "timeOptional": "Time with offset, empty = now",
     "askVerification": "Ask the engine to verify this run",
-    "verificationEngineOff": "Engine verification is not available: the engine is not connected."
+    "verificationEngineOff": "Engine verification is not available: the engine is not connected.",
+    "recordProductVerification": "Record product verification",
+    "productVerificationHint": "The database compares the stored measurements with the plan's product targets (same rules as the product check above) and records the result."
   },
   "history": {
     "title": "History",
@@ -814,5 +823,76 @@
     "machine": "Machine",
     "serial": "serial no.",
     "recipeVersion": "Recipe version"
+  },
+  "failLoop": {
+    "title": "FAIL loop",
+    "hint": "Starts from a VERIFIED_FAIL. Each step is an unchangeable record that points at real evidence; the database enforces the order. Step contents are a v0 interpretation (docs/FAIL_LOOP.md).",
+    "cases": "Cases",
+    "noCases": "No FAIL cases.",
+    "opened": "Opened",
+    "status": "Status",
+    "lastStep": "Last step",
+    "outcome": "Outcome",
+    "closedWithout": "closed without verification",
+    "caseStatus": {
+      "OPEN": "open",
+      "CLOSED": "closed"
+    },
+    "case": "FAIL case",
+    "summary": "Case",
+    "rule": "A repair that ends in FAIL, INCONCLUSIVE or INCOMPLETE is kept here but never becomes knowledge.",
+    "steps": "Steps",
+    "stepCol": "Step",
+    "content": "Content",
+    "next": "Next step",
+    "noNext": "No step can follow (e.g. a diagnosis without status).",
+    "noItems": "The failing verification has no item details, so nothing can be separated. Close the case with a reason.",
+    "noOptions": "No matching record yet.",
+    "create": "Create one",
+    "reference": "Record",
+    "parameter": "Parameter",
+    "from": "From",
+    "to": "To",
+    "unit": "Unit",
+    "rationale": "Rationale (required)",
+    "noteOptional": "Note (optional)",
+    "record": "Record step",
+    "closeReason": "Close without verification: reason (kept, never knowledge)",
+    "close": "Close case",
+    "knowledge": "Knowledge 38 → 39 → 40 → CROSS",
+    "knowledgeRule": "Only after a verified PASS with saved evidence; stages in order, each once, unchangeable.",
+    "noKnowledge": "No knowledge recorded.",
+    "stage": "Stage",
+    "statement": "Statement",
+    "addKnowledge": "Record stage",
+    "open": "Open FAIL loop",
+    "inScope": "in scope",
+    "outOfScope": "out of scope",
+    "quarantined": "quarantined",
+    "measurements": "measurements",
+    "files": "files",
+    "note": "note",
+    "step": {
+      "DECOMPOSITION": "Decomposition",
+      "SEPARATION": "Separation",
+      "QUARANTINE": "Quarantine / cleaning",
+      "CONSOLIDATION": "Consolidation",
+      "STATE_REFRESH": "State refresh",
+      "DIAGNOSIS": "Diagnosis",
+      "INTERVENTION": "Repair / intervention",
+      "CONTROLLED_TEST": "Controlled test",
+      "VERIFICATION": "Verification"
+    },
+    "stepHint": {
+      "DECOMPOSITION": "Recorded automatically from the failing verification.",
+      "SEPARATION": "Choose which failed items this loop works on; the rest is recorded as out of scope.",
+      "QUARANTINE": "Pick a data-quality assessment of the failed run made after the previous step (run it first on the quality page).",
+      "CONSOLIDATION": "The database gathers the verification, the assessment, the scope, the measurements and the files into one record.",
+      "STATE_REFRESH": "Pick the state snapshot built from the quarantine step's assessment.",
+      "DIAGNOSIS": "Pick the diagnosis of that snapshot. Without a named cause (DIAGNOSED, engine only) the loop returns to quarantine with new data.",
+      "INTERVENTION": "Pick a new plan for the same machine, created after the case opened, and describe the changes and why.",
+      "CONTROLLED_TEST": "Pick a completed run on the intervention plan. Starting it needed an approved decision (database rule).",
+      "VERIFICATION": "Pick a verification of the controlled test run. It closes the case; only a verified PASS with saved evidence can become knowledge."
+    }
   }
 }

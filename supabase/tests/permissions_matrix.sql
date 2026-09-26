@@ -5,10 +5,10 @@
 do $test$
 declare
   -- MATRIX (must equal lib/settings/permissions.ts; permissions.test.ts checks it)
-  expected jsonb := '{"view":["ADMIN","ENGINEER","OPERATOR","VIEWER"],"organization":["ADMIN"],"sites":["ADMIN"],"members":["ADMIN"],"machines_materials_recipes":["ADMIN","ENGINEER"],"process_plans":["ADMIN","ENGINEER"],"runs_and_import":["ADMIN","ENGINEER","OPERATOR"],"product_measurements":["ADMIN","ENGINEER","OPERATOR"],"approve_plan":["ADMIN","ENGINEER","OPERATOR"],"quality_and_diagnosis":["ADMIN","ENGINEER"],"seal_audit":["ADMIN","ENGINEER"],"engine_results":[]}';
+  expected jsonb := '{"view":["ADMIN","ENGINEER","OPERATOR","VIEWER"],"organization":["ADMIN"],"sites":["ADMIN"],"members":["ADMIN"],"machines_materials_recipes":["ADMIN","ENGINEER"],"process_plans":["ADMIN","ENGINEER"],"runs_and_import":["ADMIN","ENGINEER","OPERATOR"],"product_measurements":["ADMIN","ENGINEER","OPERATOR"],"approve_plan":["ADMIN","ENGINEER","OPERATOR"],"quality_and_diagnosis":["ADMIN","ENGINEER"],"seal_audit":["ADMIN","ENGINEER"],"fail_loop":["ADMIN","ENGINEER"],"engine_results":[]}';
   roles text[] := array['ADMIN','ENGINEER','OPERATOR','VIEWER'];
   users jsonb := '{}'::jsonb; plans jsonb := '{}'::jsonb;
-  org uuid; site uuid; machine uuid; recipe uuid; rv uuid; run uuid; p uuid; u uuid; newbie uuid;
+  org uuid; site uuid; machine uuid; recipe uuid; rv uuid; run uuid; p uuid; u uuid; newbie uuid; run_c uuid; plan_c uuid;
   rl text; ok boolean; n bigint;
   observed jsonb := '{}'::jsonb;
   mismatches jsonb := '[]'::jsonb; a text;
@@ -31,6 +31,12 @@ begin
     update public.process_plans set preflight_status = 'READY_FOR_OPERATOR_REVIEW', preflight_at = now() where id = p;
     plans := plans || jsonb_build_object(rl, p);
   end loop;
+  -- a completed run on an approved plan, for the FAIL loop's product verification
+  insert into public.process_plans (organization_id, recipe_version_id, machine_id) values (org, rv, machine) returning id into plan_c;
+  update public.process_plans set preflight_status = 'READY_FOR_OPERATOR_REVIEW', preflight_at = now(), approved_at = now(), approved_by = (users ->> 'ADMIN')::uuid where id = plan_c;
+  insert into public.runs (organization_id, machine_id, process_plan_id, run_code) values (org, machine, plan_c, 'PM-C') returning id into run_c;
+  update public.runs set status = 'RUNNING', started_at = now() - interval '2 hours' where id = run_c;
+  update public.runs set status = 'COMPLETED', ended_at = now() - interval '1 hour' where id = run_c;
   foreach a in array array(select jsonb_object_keys(expected)) loop observed := observed || jsonb_build_object(a, '[]'::jsonb); end loop;
 
   foreach rl in array roles loop
@@ -80,6 +86,10 @@ begin
 
     begin perform public.seal_run_audit(run);
       observed := jsonb_set(observed, '{seal_audit}', (observed -> 'seal_audit') || to_jsonb(rl));
+    exception when others then null; end;
+
+    begin perform public.record_product_verification(run_c);
+      observed := jsonb_set(observed, '{fail_loop}', (observed -> 'fail_loop') || to_jsonb(rl));
     exception when others then null; end;
 
     begin insert into public.verifications (organization_id, run_id, kind, state) values (org, run, 'PRODUCT', 'VERIFIED_PASS');

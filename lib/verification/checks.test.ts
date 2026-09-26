@@ -62,3 +62,17 @@ test("other unit or no tolerance -> INCONCLUSIVE", () => {
   const noTol = [{ parameter: "hardness", unit: "N", min_value: null, target_value: 20, max_value: null }];
   assert.equal(productCheck(noTol, [{ parameter: "hardness", value: 20, unit: "N" }]).overall, "INCONCLUSIVE");
 });
+
+test("same fixture as supabase/tests/fail_loop.sql: app check and database agree", () => {
+  // record_product_verification (0018) returned: density PASS [420], hardness INCOMPLETE, moisture FAIL [9]; overall FAIL.
+  const r = productCheck([
+    { parameter: "moisture", unit: "%", min_value: 5, target_value: null, max_value: 8 },
+    { parameter: "density", unit: "g/l", min_value: 400, target_value: null, max_value: 450 },
+    { parameter: "hardness", unit: "N", min_value: 1, target_value: null, max_value: 2 },
+  ], [
+    { parameter: "moisture", value: 9, unit: "%" }, { parameter: "moisture", value: 7, unit: "%" }, { parameter: "density", value: 420, unit: "g/l" },
+  ] as never);
+  assert.equal(r.overall, "VERIFIED_FAIL");
+  assert.deepEqual(r.rows.map((x) => [x.parameter, x.state, x.reason, x.values]).sort(),
+    [["density", "VERIFIED_PASS", null, [420]], ["hardness", "INCOMPLETE", "NOT_MEASURED", []], ["moisture", "VERIFIED_FAIL", "OUTSIDE", [9]]]);
+});

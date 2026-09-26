@@ -4,7 +4,7 @@ import { getT } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
 import { compareWithContract, engineConfigured, METRIC_UNITS } from "@/server/engine";
 import { createSupabaseServer } from "@/lib/supabase/server";
-import { addMeasurement, cancelPlannedRun, createProductSample, endRun, requestEngineVerification, sealRunAudit, setRunPlan, startRun } from "@/server/actions";
+import { addMeasurement, cancelPlannedRun, createProductSample, endRun, openFailCase, recordProductVerification, requestEngineVerification, sealRunAudit, setRunPlan, startRun } from "@/server/actions";
 import type { Snapshot } from "@/lib/diagnosis/snapshot";
 import { predictedVsActual, productCheck, type Measurement, type Prediction, type TargetValue } from "@/lib/verification/checks";
 import { DataTable, Empty, Field, FormGrid, Notice, PageHeader, Panel, Select, formErrorKey } from "@/components/ui";
@@ -51,6 +51,8 @@ export default async function RunDetail({ params, searchParams }: {
     : { data: [] };
   const machinePlans = (machinePlansRes.data ?? []) as { id: string; version: number; preflight_status: string | null; approved_at: string | null }[];
   const audits = (auditRes.data ?? []) as { id: string; created_at: string; final_hash: string }[];
+  const failCasesRes = await supabase.from("fail_cases").select("id, trigger_verification_id, status").eq("run_id", id);
+  const caseOf = new Map(((failCasesRes.data ?? []) as { id: string; trigger_verification_id: string; status: string }[]).map((f) => [f.trigger_verification_id, f]));
   const samples = (samplesRes.data ?? []) as Sample[];
   const measRes = samples.length
     ? await supabase.from("product_measurements").select("id, product_sample_id, parameter, value, unit, method, created_at")
@@ -234,10 +236,22 @@ export default async function RunDetail({ params, searchParams }: {
             <p className="mt-1 text-muted">{t("runDetail.noVerification")}</p>
           </div>
         ) : (
-          <DataTable head={[t("runDetail.kind"), t("runDetail.result"), t("runDetail.evidence"), t("runDetail.recorded")]}
+          <DataTable head={[t("runDetail.kind"), t("runDetail.result"), t("runDetail.evidence"), t("runDetail.recorded"), t("failLoop.title")]}
             rows={verifications.map((v) => [t(`dashboard.verificationKind.${v.kind}`),
               <span key="s" className={stateTone(v.state)}>{t(`dashboard.verificationState.${v.state}`)}</span>,
-              v.evidence_saved ? t("runDetail.evidenceSaved") : t("runDetail.evidenceNotSaved"), date(v.verified_at)])} />
+              v.evidence_saved ? t("runDetail.evidenceSaved") : t("runDetail.evidenceNotSaved"), date(v.verified_at),
+              caseOf.get(v.id)
+                ? <Link key="f" href={`/fail-cases/${caseOf.get(v.id)!.id}`} className="underline decoration-line underline-offset-4">{t(`failLoop.caseStatus.${caseOf.get(v.id)!.status}`)}</Link>
+                : v.state === "VERIFIED_FAIL" && canSeal
+                  ? <form key="f" action={openFailCase}><input type="hidden" name="verification_id" value={v.id} /><input type="hidden" name="run_id" value={id} /><button className="text-stop underline">{t("failLoop.open")}</button></form>
+                  : "—"])} />
+        )}
+        {canSeal && run.status === "COMPLETED" && (
+          <form action={recordProductVerification} className="border-t border-line px-4 py-3">
+            <input type="hidden" name="run_id" value={id} />
+            <p className="mb-2 text-sm text-muted">{t("runDetail.productVerificationHint")}</p>
+            <button className="rounded border border-line px-3 py-2 text-sm">{t("runDetail.recordProductVerification")}</button>
+          </form>
         )}
         {canSeal && run.status === "COMPLETED" && (engineConfigured() ? (
           <form action={requestEngineVerification} className="border-t border-line px-4 py-3">
