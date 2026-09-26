@@ -172,7 +172,14 @@
     "power": "Drive power [kW]",
     "maxRpm": "Max screw speed [rpm]",
     "maxPressure": "Max pressure [bar]",
-    "zones": "Barrel zones"
+    "zones": "Barrel zones",
+    "modelCatalog": "Model (reference catalog)",
+    "modelCatalogNone": "— none selected —",
+    "modelUnverified": "no verified data",
+    "modelCatalogTitle": "Extruder model catalog",
+    "modelCatalogNote": "Values are quoted from the cited source for that model. A row with no source is the model name only, offered for selection — no number is guessed.",
+    "modelMaxSolid": "Max solid feed [kg/h]",
+    "modelMaxLiquid": "Max liquid feed [l/h]"
   },
   "materials": {
     "title": "Materials",

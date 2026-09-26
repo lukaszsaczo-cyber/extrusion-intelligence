@@ -172,7 +172,14 @@
     "power": "Moc napędu [kW]",
     "maxRpm": "Maks. obroty ślimaka [rpm]",
     "maxPressure": "Maks. ciśnienie [bar]",
-    "zones": "Strefy cylindra"
+    "zones": "Strefy cylindra",
+    "modelCatalog": "Model (katalog referencyjny)",
+    "modelCatalogNone": "— nie wybrano —",
+    "modelUnverified": "brak zweryfikowanych danych",
+    "modelCatalogTitle": "Katalog modeli ekstruderów",
+    "modelCatalogNote": "Wartości pochodzą z cytowanych źródeł dla danego modelu. Wiersz bez źródła to sama nazwa modelu do wyboru — żadna liczba nie jest zgadywana.",
+    "modelMaxSolid": "Maks. podawanie suche [kg/h]",
+    "modelMaxLiquid": "Maks. podawanie cieczy [l/h]"
   },
   "materials": {
     "title": "Surowce",

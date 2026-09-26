@@ -96,6 +96,7 @@ export async function createSite(formData: FormData) {
 const MachineInput = z.object({
   site_id: uuid,
   manufacturer: optText(), model: optText(), variant: optText(), serial_number: optText(),
+  model_catalog_code: optText(64),
   screw_diameter_mm: optPositive, l_d: optPositive, drive_power_kw: optPositive,
   configured_max_rpm: optPositive, configured_max_pressure_bar: optPositive,
   zone_count: z.string().trim()
