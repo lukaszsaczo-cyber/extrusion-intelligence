@@ -4,7 +4,7 @@ import { getT } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
 import { compareWithContract, METRIC_UNITS } from "@/server/engine";
 import { createSupabaseServer } from "@/lib/supabase/server";
-import { addMeasurement, createProductSample, sealRunAudit } from "@/server/actions";
+import { addMeasurement, cancelPlannedRun, createProductSample, endRun, sealRunAudit, setRunPlan, startRun } from "@/server/actions";
 import type { Snapshot } from "@/lib/diagnosis/snapshot";
 import { predictedVsActual, productCheck, type Measurement, type Prediction, type TargetValue } from "@/lib/verification/checks";
 import { DataTable, Empty, Field, FormGrid, Notice, PageHeader, Panel, Select, formErrorKey } from "@/components/ui";
@@ -45,6 +45,11 @@ export default async function RunDetail({ params, searchParams }: {
       : Promise.resolve({ data: null }),
     supabase.from("audit_records").select("id, created_at, final_hash").eq("run_id", id).order("created_at", { ascending: false }),
   ]);
+  const machinePlansRes = run.status === "PLANNED"
+    ? await supabase.from("process_plans").select("id, version, preflight_status, approved_at").eq("organization_id", orgId).eq("machine_id", run.machine_id)
+      .order("created_at", { ascending: false }).limit(100)
+    : { data: [] };
+  const machinePlans = (machinePlansRes.data ?? []) as { id: string; version: number; preflight_status: string | null; approved_at: string | null }[];
   const audits = (auditRes.data ?? []) as { id: string; created_at: string; final_hash: string }[];
   const samples = (samplesRes.data ?? []) as Sample[];
   const measRes = samples.length
@@ -71,6 +76,12 @@ export default async function RunDetail({ params, searchParams }: {
 
   const canMeasure = ["ADMIN", "ENGINEER", "OPERATOR"].includes(ctx.current.role);
   const canSeal = ["ADMIN", "ENGINEER"].includes(ctx.current.role);
+  const planState = (p: { preflight_status: string | null; approved_at: string | null }) =>
+    p.approved_at ? t("runs.planApproved") : p.preflight_status ? t("runs.planDecided") : t("runs.planNoDecision");
+  const btn = "rounded bg-teal px-3 py-2 text-sm font-medium text-ground";
+  const btnLine = "rounded border border-line px-3 py-2 text-sm";
+  const timeInput = <label className="block text-sm"><span className="mb-1 block text-muted">{t("runDetail.timeOptional")}</span>
+    <input name="at" placeholder="2026-09-26T08:00+02:00" maxLength={40} className="w-full rounded border border-line bg-ground px-3 py-2 text-sm outline-none focus:border-teal" /></label>;
   const na = t("common.notAvailable");
   const fmt = new Intl.DateTimeFormat(locale === "pl" ? "pl-PL" : "en-GB", { dateStyle: "short", timeStyle: "short" });
   const date = (x: string | null) => <span className="num">{x ? fmt.format(new Date(x)) : na}</span>;
@@ -95,6 +106,54 @@ export default async function RunDetail({ params, searchParams }: {
           [t("console.dataFiles"), (filesRes.data ?? []).length === 0 ? t("console.noFiles")
             : (filesRes.data ?? []).map((f: { filename: string; created_at: string }) => `${f.filename} (${fmt.format(new Date(f.created_at))})`).join("; ")],
         ]} />
+      </Panel>
+
+      <Panel title={t("runDetail.lifecycle")}>
+        <Notice text={t("runDetail.lifecycleHint")} />
+        <DataTable head={[t("preflight.field"), t("preflight.valueCol")]} rows={[
+          [t("runs.status"), t(`runStatus.${run.status}`)],
+          [t("runs.plan"), plan
+            ? <Link key="p" href={`/preflight/${plan.id}`} className="underline decoration-line underline-offset-4">{`${plan.id.slice(0, 8)} · ${planState(plan)}`}</Link>
+            : t("runDetail.noPlan")],
+        ]} />
+        {canMeasure && run.status === "PLANNED" && (
+          <div className="space-y-3 border-t border-line px-4 py-4">
+            <form action={setRunPlan} className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+              <input type="hidden" name="run_id" value={id} />
+              <label className="block text-sm"><span className="mb-1 block text-muted">{t("runs.plan")}</span>
+                <select name="process_plan_id" defaultValue={run.process_plan_id ?? ""} className="w-full rounded border border-line bg-ground px-3 py-2 text-sm outline-none focus:border-teal">
+                  <option value="">{t("runs.noPlanOption")}</option>
+                  {machinePlans.map((p) => <option key={p.id} value={p.id}>{`${t("runs.planVersion")} ${p.version} · ${p.id.slice(0, 8)} · ${planState(p)}`}</option>)}
+                </select></label>
+              <button className={btnLine}>{t("runDetail.linkPlan")}</button>
+            </form>
+            {plan?.approved_at ? (
+              <form action={startRun} className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                <input type="hidden" name="run_id" value={id} />
+                {timeInput}
+                <button className={btn}>{t("runDetail.start")}</button>
+              </form>
+            ) : <p className="text-sm text-caution">{t("runDetail.startNeedsApproval")}</p>}
+            <form action={cancelPlannedRun}>
+              <input type="hidden" name="run_id" value={id} />
+              <button className={btnLine}>{t("runDetail.cancel")}</button>
+            </form>
+          </div>
+        )}
+        {canMeasure && run.status === "RUNNING" && (
+          <form action={endRun} className="grid gap-3 border-t border-line px-4 py-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+            <input type="hidden" name="run_id" value={id} />
+            <label className="block text-sm"><span className="mb-1 block text-muted">{t("runDetail.outcome")}</span>
+              <select name="outcome" required defaultValue="" className="w-full rounded border border-line bg-ground px-3 py-2 text-sm outline-none focus:border-teal">
+                <option value="" disabled>—</option>
+                <option value="COMPLETED">{t("runStatus.COMPLETED")}</option>
+                <option value="ABORTED">{t("runStatus.ABORTED")}</option>
+              </select></label>
+            {timeInput}
+            <button className={btn}>{t("runDetail.end")}</button>
+          </form>
+        )}
+        {(run.status === "COMPLETED" || run.status === "ABORTED") && <Notice text={t("runDetail.final")} />}
       </Panel>
 
       <Panel title={t("runDetail.parameters")}>

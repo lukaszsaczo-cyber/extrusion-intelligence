@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { LOCALE_COOKIE, isLocale } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
+import { parseInstant } from "@/lib/runs/instant";
 
 export async function setLocale(formData: FormData) {
   const v = formData.get("locale");
@@ -49,6 +50,18 @@ function fields(formData: FormData, keys: string[]) {
   return Object.fromEntries(keys.map((k) => [k, formData.get(k) ?? undefined]));
 }
 
+// Database guard messages start with a stable token (0014); anything else is generic.
+const GUARD_ERRORS: [string, string][] = [
+  ["run_not_approved", "notApproved"], ["run_locked", "locked"], ["plan_locked", "locked"],
+  ["run_transition", "transition"], ["run_machine", "machine"], ["run_time", "time"],
+];
+function errorCode(error: { code?: string; message?: string }): string {
+  if (error.code === "42501") return "forbidden";
+  if (error.code === "23505") return "duplicate";
+  const hit = GUARD_ERRORS.find(([token]) => error.message?.startsWith(token));
+  return hit ? hit[1] : "failed";
+}
+
 // Inserts one row into the caller's current organization and returns to `path`
 // with ?e=invalid|forbidden|failed on error. Organization id never comes from the form.
 async function insertForOrg(path: string, table: string, row: Record<string, unknown> | null) {
@@ -57,7 +70,7 @@ async function insertForOrg(path: string, table: string, row: Record<string, unk
   if (!ctx?.current) redirect("/dashboard");
   const supabase = await createSupabaseServer();
   const { error } = await supabase.from(table).insert({ ...row, organization_id: ctx.current.organizationId });
-  if (error) redirect(`${path}?e=${error.code === "42501" ? "forbidden" : error.code === "23505" ? "duplicate" : "failed"}`);
+  if (error) redirect(`${path}?e=${errorCode(error)}`);
   revalidatePath(path);
   redirect(path);
 }
@@ -99,11 +112,13 @@ export async function createRecipe(formData: FormData) {
   await insertForOrg("/recipes", "recipes", p.success ? p.data : null);
 }
 
-const RunInput = z.object({ machine_id: uuid, run_code: text(64) });
+const optUuid = z.string().trim().transform((v) => (v === "" ? null : v)).pipe(uuid.nullable()).nullable().default(null);
+const RunInput = z.object({ machine_id: uuid, run_code: text(64), process_plan_id: optUuid });
 
+// A run is created PLANNED. The database (0014) checks that a linked plan is
+// for the same machine; starting needs an approved plan.
 export async function createRun(formData: FormData) {
-  const p = RunInput.safeParse(fields(formData, ["machine_id", "run_code"]));
-  // New runs start as PLANNED (column default); status changes come with run import later.
+  const p = RunInput.safeParse(fields(formData, ["machine_id", "run_code", "process_plan_id"]));
   await insertForOrg("/runs", "runs", p.success ? p.data : null);
 }
 
@@ -323,4 +338,59 @@ export async function sealRunAudit(formData: FormData) {
   if (error || typeof data !== "string") redirect(`${back}?e=${error?.code === "42501" ? "forbidden" : "failed"}`);
   revalidatePath("/audit");
   redirect(`/audit/${data}`);
+}
+
+// ---- Run lifecycle: PLANNED -> RUNNING -> COMPLETED | ABORTED (rules enforced by 0014) ----
+
+// Optional time with an explicit offset; empty = now (lib/runs/instant.ts).
+const optInstant = z.string().transform((v, ctx) => {
+  const at = parseInstant(v, new Date());
+  if (at === null) { ctx.addIssue({ code: z.ZodIssueCode.custom }); return z.NEVER; }
+  return at;
+});
+
+const runBack = (formData: FormData) => {
+  const id = uuid.safeParse(formData.get("run_id"));
+  return id.success ? `/runs/${id.data}` : "/runs";
+};
+
+async function updateRun(runId: string, patch: Record<string, unknown>) {
+  const back = `/runs/${runId}`;
+  const supabase = await createSupabaseServer();
+  const { data, error } = await supabase.from("runs").update(patch).eq("id", runId).select("id");
+  if (error) redirect(`${back}?e=${errorCode(error)}`);
+  if (!data?.length) redirect(`${back}?e=forbidden`);
+  revalidatePath(back);
+  redirect(back);
+}
+
+const RunPlanInput = z.object({ run_id: uuid, process_plan_id: optUuid });
+
+export async function setRunPlan(formData: FormData) {
+  const p = RunPlanInput.safeParse(fields(formData, ["run_id", "process_plan_id"]));
+  if (!p.success) redirect("/runs?e=invalid");
+  await updateRun(p.data.run_id, { process_plan_id: p.data.process_plan_id });
+}
+
+const StartInput = z.object({ run_id: uuid, at: optInstant });
+
+export async function startRun(formData: FormData) {
+  const p = StartInput.safeParse(fields(formData, ["run_id", "at"]));
+  if (!p.success) redirect(`${runBack(formData)}?e=${parseInstant(String(formData.get("at") ?? ""), new Date()) === null ? "time" : "invalid"}`);
+  await updateRun(p.data.run_id, { status: "RUNNING", started_at: p.data.at });
+}
+
+const EndInput = z.object({ run_id: uuid, outcome: z.enum(["COMPLETED", "ABORTED"]), at: optInstant });
+
+export async function endRun(formData: FormData) {
+  const p = EndInput.safeParse(fields(formData, ["run_id", "outcome", "at"]));
+  if (!p.success) redirect(`${runBack(formData)}?e=${parseInstant(String(formData.get("at") ?? ""), new Date()) === null ? "time" : "invalid"}`);
+  await updateRun(p.data.run_id, { status: p.data.outcome, ended_at: p.data.at });
+}
+
+// A run that never started is cancelled without times.
+export async function cancelPlannedRun(formData: FormData) {
+  const p = uuid.safeParse(formData.get("run_id"));
+  if (!p.success) redirect("/runs?e=invalid");
+  await updateRun(p.data, { status: "ABORTED" });
 }

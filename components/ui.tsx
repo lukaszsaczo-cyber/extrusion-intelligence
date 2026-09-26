@@ -26,7 +26,7 @@ export function Notice({ text, tone = "muted" }: { text: string; tone?: "muted" 
   return <p className={`px-4 py-3 text-sm ${tone === "stop" ? "text-stop" : "text-muted"}`}>{text}</p>;
 }
 
-const FORM_ERRORS = ["invalid", "forbidden", "failed", "duplicate"] as const;
+const FORM_ERRORS = ["invalid", "forbidden", "failed", "duplicate", "notApproved", "locked", "transition", "machine", "time"] as const;
 
 // Maps the ?e= code set by server actions to an i18n key, or null.
 export function formErrorKey(e: string | undefined): string | null {

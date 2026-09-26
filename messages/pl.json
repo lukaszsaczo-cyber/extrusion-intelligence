@@ -126,7 +126,12 @@
     "invalid": "Sprawdź wprowadzone wartości.",
     "forbidden": "Twoja rola nie pozwala na tę zmianę.",
     "failed": "Nie udało się zapisać. Spróbuj ponownie.",
-    "duplicate": "Taki wpis już istnieje (np. ten sam surowiec w tej wersji receptury)."
+    "duplicate": "Taki wpis już istnieje (np. ten sam surowiec w tej wersji receptury).",
+    "notApproved": "Przebieg można rozpocząć tylko na planie z zatwierdzoną decyzją silnika.",
+    "locked": "Zablokowane: rozpoczętego lub zakończonego przebiegu ani jego planu nie można zmienić ani usunąć.",
+    "transition": "Taka zmiana statusu jest niedozwolona (ZAPLANOWANY → W TOKU → ZAKOŃCZONY lub PRZERWANY).",
+    "machine": "Plan dotyczy innej maszyny.",
+    "time": "Czas musi zawierać przesunięcie strefy (np. 2026-09-26T08:00+02:00) i nie może być w przyszłości."
   },
   "form": {
     "add": "Dodaj",
@@ -196,7 +201,14 @@
     "machine": "Maszyna",
     "status": "Status",
     "start": "Start",
-    "end": "Koniec"
+    "end": "Koniec",
+    "plan": "Plan procesu",
+    "noPlanOption": "— jeszcze bez planu —",
+    "planVersion": "plan v",
+    "planApproved": "zatwierdzony",
+    "planDecided": "decyzja silnika, niezatwierdzony",
+    "planNoDecision": "bez decyzji silnika",
+    "lifecycleHint": "Przebieg powstaje jako ZAPLANOWANY. Rozpocząć go można tylko na zatwierdzonym planie tej samej maszyny; pilnuje tego baza danych."
   },
   "settings": {
     "title": "Ustawienia",
@@ -676,7 +688,17 @@
     "kind": "Rodzaj",
     "evidence": "Dowody",
     "evidenceSaved": "Zapisano dowody",
-    "evidenceNotSaved": "Brak zapisanych dowodów"
+    "evidenceNotSaved": "Brak zapisanych dowodów",
+    "lifecycle": "Status przebiegu",
+    "lifecycleHint": "ZAPLANOWANY → W TOKU → ZAKOŃCZONY lub PRZERWANY. Start wymaga zatwierdzonego planu; po starcie plan i maszyna są ustalone, a planu nie można zmienić ani usunąć. Pilnuje tego baza danych.",
+    "linkPlan": "Przypisz plan",
+    "start": "Rozpocznij przebieg",
+    "startNeedsApproval": "Start niedostępny: przebieg wymaga planu z zatwierdzoną decyzją silnika.",
+    "cancel": "Anuluj (nie rozpoczęty)",
+    "outcome": "Wynik",
+    "end": "Zakończ przebieg",
+    "final": "Stan ostateczny: przebiegu nie można już zmienić.",
+    "timeOptional": "Czas z przesunięciem strefy, puste = teraz"
   },
   "history": {
     "title": "Historia",

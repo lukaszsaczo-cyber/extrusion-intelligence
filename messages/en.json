@@ -126,7 +126,12 @@
     "invalid": "Check the entered values.",
     "forbidden": "Your role does not allow this change.",
     "failed": "Could not save. Try again.",
-    "duplicate": "This entry already exists (e.g. the same material in this recipe version)."
+    "duplicate": "This entry already exists (e.g. the same material in this recipe version).",
+    "notApproved": "A run starts only on a plan whose engine decision was approved.",
+    "locked": "Locked: a started or finished run, and the plan it ran on, cannot be changed or deleted.",
+    "transition": "This status change is not allowed (PLANNED → RUNNING → COMPLETED or ABORTED).",
+    "machine": "The plan is for another machine.",
+    "time": "Time must include a time-zone offset (e.g. 2026-09-26T08:00+02:00) and cannot be in the future."
   },
   "form": {
     "add": "Add",
@@ -196,7 +201,14 @@
     "machine": "Machine",
     "status": "Status",
     "start": "Start",
-    "end": "End"
+    "end": "End",
+    "plan": "Process plan",
+    "noPlanOption": "— no plan yet —",
+    "planVersion": "plan v",
+    "planApproved": "approved",
+    "planDecided": "engine decision, not approved",
+    "planNoDecision": "no engine decision",
+    "lifecycleHint": "A run is created as PLANNED. It can be started only on an approved plan for the same machine; the database enforces this."
   },
   "settings": {
     "title": "Settings",
@@ -676,7 +688,17 @@
     "kind": "Kind",
     "evidence": "Evidence",
     "evidenceSaved": "Evidence saved",
-    "evidenceNotSaved": "No evidence saved"
+    "evidenceNotSaved": "No evidence saved",
+    "lifecycle": "Run status",
+    "lifecycleHint": "PLANNED → RUNNING → COMPLETED or ABORTED. Start needs an approved plan; after start the plan and machine are fixed and the plan cannot be changed or deleted. Enforced by the database.",
+    "linkPlan": "Link plan",
+    "start": "Start run",
+    "startNeedsApproval": "Start is not available: the run needs a plan whose engine decision was approved.",
+    "cancel": "Cancel (never started)",
+    "outcome": "Outcome",
+    "end": "End run",
+    "final": "Final state: the run can no longer be changed.",
+    "timeOptional": "Time with offset, empty = now"
   },
   "history": {
     "title": "History",

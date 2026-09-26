@@ -25,15 +25,19 @@ unit tests and database tests.
 
 | Verdict | Count | AR |
 |---|---|---|
-| PASS | 12 | 1, 2, 3, 4, 5, 6, 10, 11, 12, 14, 17, 19 |
-| PARTIAL | 5 | 8, 13, 15, 16, 20 |
-| FAIL | 3 | 7, 9, 18 |
+| PASS | 14 | 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 14, 17, 19 |
+| PARTIAL | 4 | 13, 15, 16, 20 |
+| FAIL | 2 | 7, 18 |
 
-The three FAILs, and the PARTIAL on approval, break the core chain the spec is
-built on: **DECISION → APPROVAL → RUN**.
-- The app never asks the engine for a decision.
-- The database does not stop a run on a plan that was never approved.
-- An approved plan can be deleted.
+**Update 2026-09-26 (fix 1).** Migration 0014 and the run lifecycle UI close
+AR-8 and AR-9. The `run_plan_guard.sql` test passes 20/20, and the other
+database tests were re-run after 0014 and still pass. The original audit
+(2026-09-25) had 12 PASS, 5 PARTIAL and 3 FAIL, with AR-8 PARTIAL and AR-9
+FAIL.
+
+The core chain was **DECISION → APPROVAL → RUN**. APPROVAL → RUN is now
+enforced by the database. DECISION is still open (AR-7): the app never asks
+the engine for a decision.
 
 Fixes are listed at the end.
 
@@ -48,8 +52,8 @@ Fixes are listed at the end.
 | 5 | Wizard: product → recipe → machine → configuration → plan → preflight | PASS | <ul><li>Pages `new-product`, `recipes/[id]`, `preflight`.</li><li>A FINAL recipe needs components summing to 100 %, and a FINAL version is frozen (approval_flow checks 1–3).</li></ul> |
 | 6 | Preflight: known constraints → PASS / FAIL / NEEDS DATA | PASS | <ul><li>`lib/preflight/known-limits.ts`, 9 tests.</li><li>Unknown, other-unit or run-time limits give NEEDS_DATA, never PASS.</li></ul> |
 | 7 | Decision returned by the engine through ei-engine-contract | **FAIL** | <ul><li>The contract's `adapter.analyzePreflight()` is never called by the app. Only `getEngineHealth()` is used.</li><li>There is no API route or server action that requests a decision, and no server-side path that stores one. Decision columns are writable only by a trusted role (`tg_plan_guard`), and `SUPABASE_SERVICE_ROLE_KEY` is not set.</li><li>Result: even with the engine connected, no decision would ever appear.</li></ul> |
-| 8 | Approval with hard database constraints, and DECISION → APPROVAL → RUN | **PARTIAL** | <ul><li>Approval itself: DB test PASS 11/11. Covers role, approvable decision, one approval only, and a changed input voiding decision and approval.</li><li>Probe (rolled back): an ENGINEER can **delete an approved plan** (1 row).</li><li>Deleting that plan sets the run's `process_plan_id` to NULL, so the decision and approval links disappear from the run.</li></ul> |
-| 9 | Run: recipe, machine, configuration, plan, timestamps, metrics | **FAIL** | <ul><li>The UI creates a run with only machine and code. It cannot link a plan or set start, end or status.</li><li>Probe (rolled back): an OPERATOR inserted a run with status RUNNING on a plan **with no decision and no approval**, and the database accepted it.</li><li>The same OPERATOR could **re-link** a run's plan afterwards (1 row).</li><li>Metrics come only from CSV import.</li><li>What holds: a run that has imported metrics cannot be deleted (FK refused).</li></ul> |
+| 8 | Approval with hard database constraints, and DECISION → APPROVAL → RUN | PASS (fixed 2026-09-26) | <ul><li>Approval itself: DB test PASS 11/11.</li><li>0014 adds the rest (`run_plan_guard.sql` PASS 20/20):<ul><li>a run starts only on an approved plan for the same machine;</li><li>an approved plan, or one used by a run, cannot be deleted;</li><li>a plan with a started run cannot be changed, so its approval cannot be voided afterwards.</li></ul></li><li>Before the fix, a probe showed an ENGINEER could delete an approved plan.</li></ul> |
+| 9 | Run: recipe, machine, configuration, plan, timestamps, metrics | PASS (fixed 2026-09-26) | <ul><li>The run form links a plan (and through it the recipe version and configuration).</li><li>Run Detail offers:<ul><li>PLANNED → RUNNING → COMPLETED or ABORTED;</li><li>start and end times, now or ISO 8601 with an offset; a time without an offset is refused (`lib/runs/instant.ts`, 2 tests).</li></ul></li><li>The database (0014, test 20/20):<ul><li>creates runs as PLANNED;</li><li>refuses to start without an approved plan, or with a future time;</li><li>fixes plan, machine and start time after the start;</li><li>makes COMPLETED and ABORTED final;</li><li>allows deleting only PLANNED runs.</li></ul></li><li>CSV import into a PLANNED run stays possible for historical plant exports; the RUN step then shows NOT AVAILABLE.</li><li>Before the fix, a probe showed an OPERATOR could start a run on an unapproved plan and re-link it afterwards.</li></ul> |
 | 10 | CSV import: MISSING, SUSPECT, formulas stored as text (separate test set) | PASS | <ul><li>8 tests in `lib/import/run-file.test.ts`.</li><li>Formulas stay SUSPECT with the raw text kept and are never evaluated.</li><li>Timestamps without an offset are rejected.</li><li>Thousands separators are rejected.</li></ul> |
 | 11 | Run Detail: data, parameters, measurements, quality status, result | PASS | <ul><li>`/runs/[id]`.</li><li>Measurements are append-only: DB verification_guard PASS 5/5.</li></ul> |
 | 12 | Predicted vs actual | PASS (logic) | <ul><li>Uses the contract's own `compare` on the clean median, with no unit conversion (tests 51–53).</li><li>Real data is blocked by AR-7: there are no predictions, so the panel shows NOT AVAILABLE, as intended.</li></ul> |
@@ -84,7 +88,9 @@ transaction. Afterwards there were 1 organization, 0 test users and 0 runs.
 | `verification_guard.sql` | production DB | PASS 5/5 |
 | `audit_seal.sql` | production DB | PASS 16/16 |
 | `permissions_matrix.sql` | production DB | PASS, 12 × 4, 0 mismatches |
-| Probe: DECISION → APPROVAL → RUN (rolled back) | production DB | **FAIL** (see AR-8, AR-9) |
+| Probe: DECISION → APPROVAL → RUN (rolled back) | production DB | FAIL on 2026-09-25 (see AR-8, AR-9); fixed by 0014 |
+| `run_plan_guard.sql` (2026-09-26, after 0014) | production DB | PASS 20/20 |
+| Re-run after 0014: `rls_cross_org` 146, `approval_flow` 11/11, `verification_guard` 5/5, `audit_seal` 16/16, `permissions_matrix` 12 × 4 | production DB | all PASS |
 | Route smoke without a session (`next start`) | local | PASS: all app routes 307 → /login, `/api/health` 200 |
 | Vercel deployment of `fb30398` | GitHub status | success |
 | Smoke test on the production URL | — | NOT RUN (`*.vercel.app` not reachable from this environment) |
@@ -93,14 +99,8 @@ transaction. Afterwards there were 1 organization, 0 test users and 0 runs.
 
 ## Fixes, in order of risk
 
-1. **AR-8/9: database guard for DECISION → APPROVAL → RUN.** Planned
-   behaviour:
-   - a run can move to RUNNING or COMPLETED only when its plan is approved;
-   - a plan cannot be changed once a run started on it;
-   - an approved plan, or a plan referenced by a run, cannot be deleted.
-   
-   The run form also needs a plan selector and start and end actions. This
-   needs no secret.
+1. ~~**AR-8/9: database guard for DECISION → APPROVAL → RUN.**~~ Done
+   2026-09-26: migration 0014 and the run lifecycle UI.
 2. **AR-7/13: server path for decision and verification.** A server action
    calls `adapter.analyzePreflight()` or `verifyRun()`, and the sanitized
    result is stored through a trusted role. Without the engine, the contract's
