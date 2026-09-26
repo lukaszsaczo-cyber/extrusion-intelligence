@@ -120,6 +120,7 @@ transaction. Afterwards there were 1 organization, 0 test users and 0 runs.
 | `engine_results.sql` (2026-09-26, after 0015 and 0016) | production DB | PASS 25/25. The first run was FAIL 2/22, which showed the fail-open bug; fixed in 0016 |
 | After 0017: `audit_seal` (audit-v2) 16/16, `run_plan_guard` (with operator) 23/23, `permissions_matrix` 12 × 4 | production DB | all PASS |
 | After 0019/0020 (FAIL loop order A): `fail_loop` 37/37, `rls_cross_org` 31 tables / 161 checks, `audit_seal` (audit-v3) 16/16, `permissions_matrix` 13 × 4 | production DB | all PASS. The first `fail_loop` run found a type error in step 39; fixed in 0020 |
+| After 0021 (working canon, 38 gate): `fail_loop` 40/40, `rls_cross_org` 31 tables / 161 checks | production DB | all PASS |
 | Secret canary incl. `ENGINE_WRITE_KEY` | local | PASS, 6 canaries, 0 files |
 | Term scan tests (`scripts/term-scan.test.mjs`) | local | 6/6 PASS |
 | Term scan with the real terms | — | NOT RUN (no `TERM_GUARD_KEY` or digests) |

@@ -49,7 +49,6 @@ export default async function FailCasePage({ params, searchParams }: { params: P
   const next = canDrive ? nextStep({
     open: c.status === "OPEN", lastStep: last?.step ?? null,
     diagnosisStatus: typeof diagnosisStatus === "string" ? diagnosisStatus : null,
-    pass: c.outcome === "VERIFIED_PASS" && c.outcome_evidence_saved,
   }) : null;
 
   // options for the next step's reference: only records that the database will accept
@@ -119,10 +118,10 @@ export default async function FailCasePage({ params, searchParams }: { params: P
     if (s.step === "INTERVENTION") parts.push(changes(p.changes));
     if (s.step === "CONTROLLED_TEST") parts.push(String(p.run_status));
     if (s.step === "VERIFICATION") parts.push(`${t(`dashboard.verificationState.${p.state}`)} · ${t(`dashboard.verificationKind.${p.kind}`)}`);
-    if (s.step === "REPORT") parts.push(`${t("failLoop.outcome")}: ${p.outcome ? t(`dashboard.verificationState.${p.outcome}`) : "—"}`,
+    if (s.step === "FILTER") parts.push(p.result === "PASSED" ? t("failLoop.gatePassed") : t("failLoop.gateClosed"),
+      `${t("failLoop.outcome")}: ${p.outcome ? t(`dashboard.verificationState.${p.outcome}`) : "—"}`,
       `${t("failLoop.cycles")} ${p.cycles} · ${t("failLoop.diagnoses")} ${p.diagnoses}`,
-      p.next === "FILTER" ? t("failLoop.reportNextFilter") : t("failLoop.reportClosed"));
-    if (s.step === "FILTER") parts.push(`${t("failLoop.passed")}: ${passed(p.passed)}`);
+      ...(p.result === "PASSED" ? [`${t("failLoop.passed")}: ${passed(p.passed)}`] : []));
     if (s.step === "VERIFY_PERSIST") parts.push(`${t("failLoop.rechecked")}: ${t(`dashboard.verificationState.${p.rechecked_state}`)}`);
     if (s.step === "LOCK") parts.push(t("failLoop.threshold"));
     if (s.step === "CROSS") parts.push(`${t("failLoop.newBaseline")} ${typeof p.new_baseline_plan_id === "string" ? p.new_baseline_plan_id.slice(0, 8) : "—"}`);

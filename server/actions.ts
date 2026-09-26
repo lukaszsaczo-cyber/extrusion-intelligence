@@ -501,7 +501,7 @@ export async function requestEngineVerification(formData: FormData) {
 
 const FAIL_ERRORS: [string, string][] = [
   ["fail_order", "failOrder"], ["fail_ref", "failRef"], ["fail_payload", "invalid"], ["fail_closed", "failClosed"],
-  ["fail_not_failed", "failNotFailed"], ["knowledge_refused", "knowledgeRefused"], ["fail_filter", "failFilter"],
+  ["fail_not_failed", "failNotFailed"], ["knowledge_refused", "knowledgeRefused"],
   ["fail_verify", "failVerify"], ["fail_locked", "failLocked"],
   ["engine_run_not_completed", "notCompleted"],
 ];

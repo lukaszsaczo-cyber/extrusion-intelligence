@@ -1,15 +1,16 @@
--- FAIL loop in order A (migration 0019):
+-- FAIL loop, working canon (migrations 0019-0021):
 -- ROZPAD I -> DIAGNOZA -> 3 -> 6 -> 28 -> ODŚWIEŻENIE -> NAPRAWA -> TEST -> WERYFIKACJA
--- -> RAPORT -> 38 -> 39 -> 40 -> CROSS -> AUDIT. Covers the loop back to diagnosis when
--- no cause is named, a named cause only from a trusted role, 39's re-check on current
--- measurements, the 40 lock, audit-v3 and a case closed without PASS.
+-- -> 38 (evidence gate) -> 39 -> 40 -> CROSS -> AUDIT. Covers the loop back to diagnosis
+-- when no cause is named, a named cause only from a trusted role, 38 stopping a failed
+-- repair, 39's re-check on current measurements, the 40 lock, audit-v3 and a case
+-- closed with a reason.
 -- Always ends in RAISE, so nothing persists. Result: 'FAIL_LOOP_RESULT {json}'.
 do $test$
 declare
   u_eng uuid := gen_random_uuid(); u_op uuid := gen_random_uuid(); u_view uuid := gen_random_uuid();
   org uuid; site uuid; m1 uuid; m2 uuid; rec uuid; rv uuid; tgt uuid; p1 uuid; p2 uuid; p_other uuid;
-  r1 uuid; r0 uuid; r2 uuid; s1 uuid; s2 uuid; v_fail uuid; v_inc uuid; v_pass uuid; v_fail2 uuid;
-  cs uuid; cs2 uuid; qa_a uuid; qa0 uuid; qa1 uuid; qa2 uuid; qa_x uuid; sn_a uuid; sn1 uuid; sn2 uuid; sn_x uuid;
+  r1 uuid; r0 uuid; r2 uuid; r3 uuid; s1 uuid; s2 uuid; s3 uuid; p3 uuid; v_fail uuid; v_inc uuid; v_pass uuid; v_fail2 uuid; v_fail3 uuid; v_fail4 uuid;
+  cs uuid; cs2 uuid; cs3 uuid; qa_a uuid; qa0 uuid; qa1 uuid; qa2 uuid; qa_x uuid; sn_a uuid; sn1 uuid; sn2 uuid; sn_x uuid;
   d1 uuid; d2 uuid; d_old uuid; au_r1 uuid; au uuid;
   x jsonb; n bigint; checks int := 0; failures jsonb := '[]'::jsonb;
   pass_gates jsonb := '[{"id":"DATA_RELIABLE","status":"PASS"},{"id":"MACHINE_STABLE","status":"PASS"},{"id":"DEVIATION_PERSISTENT","status":"PASS"},{"id":"COUPLED_SIGNALS","status":"PASS"},{"id":"CAUSE_SEPARABLE","status":"PASS"}]';
@@ -194,7 +195,7 @@ begin
   update public.runs set status = 'COMPLETED', ended_at = now() - interval '10 minutes' where id = r2;
   perform public.record_fail_step(cs, 'CONTROLLED_TEST', r2, '{}');
 
-  -- WERYFIKACJA -> RAPORT
+  -- WERYFIKACJA
   insert into public.product_samples (organization_id, run_id, sample_code) values (org, r2, 'S2') returning id into s2;
   insert into public.product_measurements (organization_id, product_sample_id, parameter, value, unit) values
     (org, s2, 'moisture', 6.5, '%'), (org, s2, 'density', 430, 'g/l'), (org, s2, 'hardness', 1.4, 'N');
@@ -204,18 +205,19 @@ begin
   v_pass := public.record_product_verification(r2);
   perform public.record_fail_step(cs, 'VERIFICATION', v_pass, '{}');
   checks := checks + 1;
-  begin perform public.record_fail_step(cs, 'FILTER', null, '{}'); failures := failures || '{"check":"38 before RAPORT refused","detail":"accepted"}';
-  exception when others then if sqlerrm not like 'fail_order%' then failures := failures || jsonb_build_object('check','38 before RAPORT refused','msg',sqlerrm); end if; end;
+  begin perform public.record_fail_step(cs, 'VERIFY_PERSIST', null, '{}'); failures := failures || '{"check":"39 before 38 refused","detail":"accepted"}';
+  exception when others then if sqlerrm not like 'fail_order%' then failures := failures || jsonb_build_object('check','39 before 38 refused','msg',sqlerrm); end if; end;
   checks := checks + 1;
-  begin perform public.close_fail_case(cs, 'no'); failures := failures || '{"check":"no closing without RAPORT after verification","detail":"accepted"}';
-  exception when others then if sqlerrm not like 'fail_order%' then failures := failures || jsonb_build_object('check','no closing without RAPORT after verification','msg',sqlerrm); end if; end;
-  perform public.record_fail_step(cs, 'REPORT', null, '{"note":"moisture back in range"}');
+  begin perform public.close_fail_case(cs, 'no'); failures := failures || '{"check":"no closing after verification (38 decides)","detail":"accepted"}';
+  exception when others then if sqlerrm not like 'fail_order%' then failures := failures || jsonb_build_object('check','no closing after verification (38 decides)','msg',sqlerrm); end if; end;
 
-  -- 38 FILTR: only what was erroneous in 3 and is now a verified PASS
-  perform public.record_fail_step(cs, 'FILTER', null, '{}');
+  -- 38 FILTR DOWODÓW: the gate; only what was erroneous in 3 and is now a verified PASS
+  perform public.record_fail_step(cs, 'FILTER', null, '{"note":"moisture back in range"}');
   checks := checks + 1;
   if (select jsonb_agg(p ->> 'parameter' order by p ->> 'parameter') from public.fail_case_steps s, jsonb_array_elements(s.payload -> 'passed') p
-      where s.case_id = cs and s.step = 'FILTER') <> '["hardness","moisture"]'::jsonb then
+      where s.case_id = cs and s.step = 'FILTER') <> '["hardness","moisture"]'::jsonb
+     or (select payload ->> 'result' from public.fail_case_steps where case_id = cs and step = 'FILTER') <> 'PASSED'
+     or (select status from public.fail_cases where id = cs) <> 'OPEN' then
     failures := failures || '{"check":"38 passes the repaired items only","detail":"wrong"}';
   end if;
 
@@ -259,21 +261,64 @@ begin
   end if;
   checks := checks + 1;
   select count(*) into n from public.fail_case_steps where case_id = cs;
-  if n <> 20 then failures := failures || jsonb_build_object('check', 'all 20 steps kept (two cycles)', 'steps', n); end if;
+  if n <> 19 then failures := failures || jsonb_build_object('check', 'all 19 steps kept (two cycles)', 'steps', n); end if;
   checks := checks + 1;
   begin perform public.record_fail_step(cs, 'CROSS', null, '{}'); failures := failures || '{"check":"closed case refuses steps","detail":"accepted"}';
   exception when others then if sqlerrm not like 'fail_closed%' then failures := failures || jsonb_build_object('check','closed case refuses steps','msg',sqlerrm); end if; end;
 
-  -- a case closed without verification never becomes knowledge
+  -- case 2: the repair's test FAILS; 38 records it and closes the case, never knowledge
   v_fail2 := public.record_product_verification(r1);
   cs2 := public.open_fail_case(v_fail2);
+  perform public.record_fail_step(cs2, 'DIAGNOSIS', d2, '{}');
+  perform public.record_fail_step(cs2, 'EXTRACT', qa2, '{}');
+  perform public.record_fail_step(cs2, 'PURGE', null, '{}');
+  perform public.record_fail_step(cs2, 'CONSOLIDATE', sn2, '{}');
+  perform public.record_fail_step(cs2, 'STATE_REFRESH', null, '{}');
+  insert into public.process_plans (organization_id, recipe_version_id, machine_id, product_target_id, water_kg_h) values (org, rv, m1, tgt, 14) returning id into p3;
+  perform public.record_fail_step(cs2, 'INTERVENTION', p3, '{"changes":[{"parameter":"water_kg_h","from":10,"to":14}],"note":"more water"}');
+  reset role;
+  update public.process_plans set preflight_status = 'TEST_REQUIRED', preflight_at = now() where id = p3;
+  perform set_config('request.jwt.claims', json_build_object('sub', u_op, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  perform public.approve_process_plan(p3);
+  insert into public.runs (organization_id, machine_id, process_plan_id, run_code) values (org, m1, p3, 'F3') returning id into r3;
+  update public.runs set status = 'RUNNING', started_at = now() - interval '50 minutes' where id = r3;
+  update public.runs set status = 'COMPLETED', ended_at = now() - interval '5 minutes' where id = r3;
+  insert into public.product_samples (organization_id, run_id, sample_code) values (org, r3, 'S3') returning id into s3;
+  insert into public.product_measurements (organization_id, product_sample_id, parameter, value, unit) values
+    (org, s3, 'moisture', 9.2, '%'), (org, s3, 'density', 430, 'g/l'), (org, s3, 'hardness', 1.4, 'N');
+  reset role;
+  perform set_config('request.jwt.claims', json_build_object('sub', u_eng, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  perform public.record_fail_step(cs2, 'CONTROLLED_TEST', r3, '{}');
+  v_fail3 := public.record_product_verification(r3);
+  perform public.record_fail_step(cs2, 'VERIFICATION', v_fail3, '{}');
+  perform public.record_fail_step(cs2, 'FILTER', null, '{}');
   checks := checks + 1;
-  begin perform public.close_fail_case(cs2, '  '); failures := failures || '{"check":"closing needs a reason","detail":"accepted"}';
+  if (select jsonb_build_array(f.status, f.outcome, s.payload ->> 'result', jsonb_array_length(s.payload -> 'passed'))
+      from public.fail_cases f join public.fail_case_steps s on s.case_id = f.id and s.step = 'FILTER' where f.id = cs2)
+     <> '["CLOSED","VERIFIED_FAIL","NOT_PASSED",0]'::jsonb then
+    failures := failures || jsonb_build_object('check', '38 stops a FAIL and closes the case', 'got',
+      (select jsonb_agg(to_jsonb(s)) from public.fail_case_steps s where s.case_id = cs2 and s.step = 'FILTER'));
+  end if;
+  checks := checks + 1;
+  begin perform public.record_fail_step(cs2, 'VERIFY_PERSIST', null, '{}'); failures := failures || '{"check":"no 39 after a failed 38","detail":"accepted"}';
+  exception when others then if sqlerrm not like 'fail_closed%' then failures := failures || jsonb_build_object('check','no 39 after a failed 38','msg',sqlerrm); end if; end;
+
+  -- case 3: closed with a reason before verification
+  v_fail4 := public.record_product_verification(r1);
+  cs3 := public.open_fail_case(v_fail4);
+  checks := checks + 1;
+  begin perform public.close_fail_case(cs3, '  '); failures := failures || '{"check":"closing needs a reason","detail":"accepted"}';
   exception when others then null; end;
-  perform public.close_fail_case(cs2, 'raw material batch no longer available');
+  perform public.close_fail_case(cs3, 'raw material batch no longer available');
   reset role;
   checks := checks + 1;
   begin insert into public.knowledge_entries (organization_id, case_id, content) values (org, cs2, '{}');
+    failures := failures || '{"check":"owner cannot force knowledge from a FAIL","detail":"accepted"}';
+  exception when others then if sqlerrm not like 'knowledge_refused%' then failures := failures || jsonb_build_object('check','owner cannot force knowledge from a FAIL','msg',sqlerrm); end if; end;
+  checks := checks + 1;
+  begin insert into public.knowledge_entries (organization_id, case_id, content) values (org, cs3, '{}');
     failures := failures || '{"check":"owner cannot force knowledge","detail":"accepted"}';
   exception when others then if sqlerrm not like 'knowledge_refused%' then failures := failures || jsonb_build_object('check','owner cannot force knowledge','msg',sqlerrm); end if; end;
   checks := checks + 1;
@@ -286,14 +331,14 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub', u_op, 'role', 'authenticated')::text, true);
   set local role authenticated;
   checks := checks + 1;
-  begin perform public.open_fail_case(v_fail2); failures := failures || '{"check":"operator cannot open","detail":"accepted"}';
+  begin perform public.open_fail_case(v_fail4); failures := failures || '{"check":"operator cannot open","detail":"accepted"}';
   exception when others then if sqlstate <> '42501' then failures := failures || jsonb_build_object('check','operator cannot open','msg',sqlerrm); end if; end;
   reset role;
   perform set_config('request.jwt.claims', json_build_object('sub', u_view, 'role', 'authenticated')::text, true);
   set local role authenticated;
   checks := checks + 1;
   select count(*) into n from public.fail_case_steps where case_id = cs;
-  if n <> 20 then failures := failures || jsonb_build_object('check', 'viewer reads the loop', 'rows', n); end if;
+  if n <> 19 then failures := failures || jsonb_build_object('check', 'viewer reads the loop', 'rows', n); end if;
   reset role;
 
   raise exception 'FAIL_LOOP_RESULT %', jsonb_build_object('checks', checks, 'failures', failures,
