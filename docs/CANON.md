@@ -73,3 +73,41 @@ Where it lives:
 - In this application, the loop is driven by forms that offer only the one step
   that can come next. That is already a closed form of guidance, so there is no
   free-text dialog here.
+
+## Data and write boundaries (frozen 2026-09-26)
+
+Four separate things, never mixed:
+
+1. **PLC / Clextral (Fitsys+)**: no connection. Machine data enters only as an
+   imported file.
+2. **EI process engine**: a separate engine; contract in
+   `docs/ENGINE_CONNECTION.md`.
+3. **LNS**: the chatbot's core. It is independent of the process engine.
+4. **`ENGINE_WRITE_KEY`**: it only authorizes the engine to write its result
+   into this app's database (Supabase). It gives no access to any PLC.
+
+**Hard rule: Extrusion Intelligence needs no WRITE permission to a PLC.**
+It is read-only advisory: data → analysis → recommendation → audit. Machine
+control, if it ever comes, is a separate project with its own module,
+permissions and safety layer.
+
+Flow:
+
+    CLEXTRAL / FITSYS+ → export → CSV
+      → AUDIT 0 (data input, on a copy, no production import)
+      → normalization / tag mapping (unknown tags stay UNKNOWN, never guessed)
+      → EI process engine: prediction, verification, FAIL, evidence
+      → ENGINE_WRITE_KEY → Supabase
+      → Extrusion Intelligence → operator / audit / history
+
+A live source (OPC UA, historian or another, read-only) comes only after this
+chain has passed on a real CSV.
+
+AUDIT 0 checks:
+- tags;
+- sampling (computed from the data, never assumed) and changes in sampling rate;
+- time and timestamp consistency;
+- start and end of each run, and possible segments;
+- completeness, duplicates, gaps, non-numeric values;
+- units and ranges;
+- usefulness for the current EI.
