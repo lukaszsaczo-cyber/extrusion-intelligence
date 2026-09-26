@@ -934,5 +934,26 @@
     "machine": "Maszyna",
     "material": "Surowce",
     "recipe": "Receptura (wersja zatwierdzona)"
+  },
+  "source": {
+    "title": "Źródło danych",
+    "manual": "Ręcznie / plik",
+    "available": "dostępne",
+    "manualHint": "Import eksportu CSV z Fitsys+ albo historiana do przebiegu oraz ręczny wpis pomiarów produktu.",
+    "noRun": "Najpierw utwórz przebieg tej maszyny.",
+    "createRun": "Utwórz przebieg",
+    "importCsv": "Importuj CSV",
+    "manualEntry": "Pomiary ręczne",
+    "auto": "Automatycznie",
+    "notConnected": "niepodłączone",
+    "autoHint": "Odczyt danych maszyny na bieżąco przez bramkę w zakładzie. Aplikacja w przeglądarce nie łączy się sama z PLC przez Bluetooth ani kabel.",
+    "req": {
+      "GATEWAY_READ_ONLY": "Bramka w sieci maszyny z dostępem tylko do odczytu",
+      "OPCUA_OR_HISTORIAN": "Źródło: serwer OPC UA sterownika albo eksport historiana Fitsys+",
+      "TAG_LIST": "Potwierdzona lista tagów (sekcja Tagi poniżej)",
+      "CSV_CHAIN_PASSED": "Najpierw przejście ścieżki na prawdziwym CSV (AUDYT 0) — zasada kanonu"
+    },
+    "connectAuto": "Połącz automatycznie (niedostępne)",
+    "readOnly": "Aplikacja nigdy nie wysyła poleceń do maszyny: tylko odczyt."
   }
 }

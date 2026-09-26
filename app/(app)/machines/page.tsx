@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PlugIcon } from "@/components/plug-icon";
 import { redirect } from "next/navigation";
 import { getT } from "@/lib/i18n";
 import { getSessionContext } from "@/server/context";
@@ -59,7 +60,11 @@ export default async function MachinesPage({ searchParams }: { searchParams: Pro
               m.manufacturer ?? na, m.model ?? na, m.serial_number ?? na, siteName.get(m.site_id) ?? na,
               n(m.screw_diameter_mm), n(m.l_d), n(m.drive_power_kw), n(m.configured_max_rpm),
               n(m.configured_max_pressure_bar), n(m.zone_count),
-              <Link key="c" href={`/machine-console/${m.id}`} className="whitespace-nowrap text-teal hover:underline">{t("console.open")}</Link>,
+              <span key="c" className="flex items-center gap-3 whitespace-nowrap">
+                <Link href={`/machine-console/${m.id}#source`} title={t("source.title")} aria-label={t("source.title")}
+                  className="rounded border border-line p-1.5 text-teal hover:border-teal"><PlugIcon /></Link>
+                <Link href={`/machine-console/${m.id}`} className="text-teal hover:underline">{t("console.open")}</Link>
+              </span>,
             ])}
           />
         )}

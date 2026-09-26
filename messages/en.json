@@ -934,5 +934,26 @@
     "machine": "Machine",
     "material": "Materials",
     "recipe": "Recipe (approved version)"
+  },
+  "source": {
+    "title": "Data source",
+    "manual": "Manual / file",
+    "available": "available",
+    "manualHint": "Import a CSV export from Fitsys+ or the historian into a run, and enter product measurements by hand.",
+    "noRun": "Create a run for this machine first.",
+    "createRun": "Create run",
+    "importCsv": "Import CSV",
+    "manualEntry": "Manual measurements",
+    "auto": "Automatic",
+    "notConnected": "not connected",
+    "autoHint": "Continuous reading of machine data through a gateway at the plant. The browser app does not connect to the PLC by itself over Bluetooth or cable.",
+    "req": {
+      "GATEWAY_READ_ONLY": "A gateway in the machine network with read-only access",
+      "OPCUA_OR_HISTORIAN": "Source: the controller's OPC UA server or the Fitsys+ historian export",
+      "TAG_LIST": "A confirmed tag list (Tags section below)",
+      "CSV_CHAIN_PASSED": "The chain must first pass on a real CSV (AUDIT 0) — canon rule"
+    },
+    "connectAuto": "Connect automatically (not available)",
+    "readOnly": "The app never sends commands to the machine: read only."
   }
 }

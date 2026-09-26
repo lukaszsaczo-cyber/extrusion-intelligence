@@ -5,6 +5,8 @@ import { getSessionContext } from "@/server/context";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { createMachineLimit } from "@/server/actions";
 import { filesByRun, liveView, recordedState, type ImportedFile } from "@/lib/console/state";
+import { sourceModes } from "@/lib/console/source";
+import { PlugIcon } from "@/components/plug-icon";
 import { DataTable, Empty, Field, FormGrid, Notice, PageHeader, Panel, Select, formErrorKey } from "@/components/ui";
 
 type Machine = {
@@ -72,8 +74,49 @@ export default async function MachineConsole({ params, searchParams }: {
   return (
     <div className="space-y-6">
       <PageHeader title={`${t("console.title")}: ${title}`}>
+        <a href="#source" className="flex items-center gap-2 rounded bg-teal px-3 py-2 text-sm font-medium text-ground"><PlugIcon />{t("source.title")}</a>
         <Link href="/machine-console" className="rounded border border-line px-3 py-2 text-sm">{t("console.back")}</Link>
       </PageHeader>
+
+      <section id="source" className="scroll-mt-4 rounded-md border border-line bg-panel">
+        <h2 className="flex items-center gap-2 border-b border-line px-4 py-3 text-sm font-medium"><PlugIcon />{t("source.title")}</h2>
+        <div className="grid gap-4 p-4 md:grid-cols-2">
+          <div className="rounded border border-teal/60 p-4">
+            <p className="flex items-center justify-between gap-2 text-sm font-medium">
+              {t("source.manual")}<span className="text-teal">● {t("source.available")}</span>
+            </p>
+            <p className="mt-1 text-sm text-muted">{t("source.manualHint")}</p>
+            {runs.length === 0 ? (
+              <p className="mt-3 text-sm">{t("source.noRun")} <Link href="/runs" className="text-teal hover:underline">{t("source.createRun")}</Link></p>
+            ) : (
+              <ul className="mt-3 space-y-2 text-sm">
+                {runs.slice(0, 5).map((r) => (
+                  <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="num mr-auto">{r.run_code} <span className="text-muted">· {t(`runStatus.${r.status}`)}</span></span>
+                    <Link href={`/runs/${r.id}/import`} className="text-teal hover:underline">{t("source.importCsv")}</Link>
+                    <Link href={`/runs/${r.id}`} className="text-teal hover:underline">{t("source.manualEntry")}</Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="rounded border border-line p-4">
+            <p className="flex items-center justify-between gap-2 text-sm font-medium">
+              {t("source.auto")}<span className="text-unknown">○ {t("source.notConnected")}</span>
+            </p>
+            <p className="mt-1 text-sm text-muted">{t("source.autoHint")}</p>
+            {(() => { const auto = sourceModes()[1]; return auto.available ? null : (
+              <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted">
+                {auto.requires.map((r) => <li key={r}>{t(`source.req.${r}`)}</li>)}
+              </ul>
+            ); })()}
+            <button type="button" disabled className="mt-3 cursor-not-allowed rounded border border-line px-3 py-2 text-sm text-muted opacity-70">
+              {t("source.connectAuto")}
+            </button>
+            <p className="mt-2 text-xs text-muted">{t("source.readOnly")}</p>
+          </div>
+        </div>
+      </section>
 
       <Panel title={t("console.live")}>
         <p className="px-4 pt-4 text-lg font-medium text-unknown">{t("common.notAvailable")}</p>
